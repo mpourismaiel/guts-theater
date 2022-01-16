@@ -1,12 +1,12 @@
 package main
 
 import (
-	"fmt"
+	"log"
 
-	"mpourismaiel.dev/guts/store"
+	"mpourismaiel.dev/guts/api"
 )
 
 func main() {
-	fmt.Println("Starting project...")
-	_ = store.New("guts")
+	log.Println("Starting project...")
+	api.New("4000")
 }
