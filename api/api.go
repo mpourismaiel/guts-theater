@@ -28,6 +28,7 @@ func New(port string) error {
 	}
 
 	api.server.Router().Route("/", func(r chi.Router) {
+		r.Get("/seats", api.fetchSeats())
 		r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("{\"ok\": true}"))
 		})
