@@ -74,6 +74,30 @@ func (m *Models) SectionDelete(s *Section) error {
 	return nil
 }
 
+func (m *Models) SectionGetAll() ([]*Section, error) {
+	docs, err := m.db.Query(context.TODO(), "_design/section", "_view/section-list-by-name", kivik.Options{
+		"include_docs": true,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*Section
+	for docs.Next() {
+		var doc Section
+		if err := docs.ScanDoc(&doc); err != nil {
+			return nil, err
+		}
+		result = append(result, &doc)
+	}
+
+	if docs.Err() != nil {
+		return nil, docs.Err()
+	}
+
+	return result, nil
+}
+
 func (m *Models) SectionGetByName(name string) (*Section, error) {
 	docs, err := m.db.Query(context.TODO(), "_design/section", "_view/section-list-by-name", kivik.Options{
 		"include_docs": true,
@@ -86,12 +110,12 @@ func (m *Models) SectionGetByName(name string) (*Section, error) {
 	var doc Section
 	for docs.Next() {
 		if err := docs.ScanDoc(&doc); err != nil {
-			panic(err)
+			return nil, err
 		}
 	}
 
 	if docs.Err() != nil {
-		panic(docs.Err())
+		return nil, docs.Err()
 	}
 
 	return &doc, nil

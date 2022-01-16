@@ -9,9 +9,10 @@ import (
 )
 
 type Row struct {
-	ID   string `json:"_id"`
-	Rev  string `json:"rev,omitempty"`
-	Name string `json:"name"`
+	ID      string `json:"_id"`
+	Rev     string `json:"rev,omitempty"`
+	Name    string `json:"name"`
+	Section string `json:"section"`
 }
 
 func (m *Models) rowCreateModel() error {
@@ -19,7 +20,7 @@ func (m *Models) rowCreateModel() error {
 		"id": "_design/row",
 		"views": map[string]interface{}{
 			"row-list-by-section": map[string]string{
-				"map": "function (doc) {\n if (!doc._id.match(/section:[^:]+:row:[^:]+$/)) {\n return;\n }\n const ids = doc._id.match(/section:([^:]+):row:([^:]+)/);\n emit(ids[1], 1);\n }",
+				"map": "function (doc) {\n if (!doc._id.match(/section:[^:]+:row:[^:]+$/)) {\n return;\n }\n emit(doc.section, 1);\n }",
 			},
 		},
 	})
@@ -27,12 +28,12 @@ func (m *Models) rowCreateModel() error {
 	return err
 }
 
-func (m *Models) RowSave(sectionName string, r *Row) error {
+func (m *Models) RowSave(r *Row) error {
 	if r.Rev != "" {
 		return fmt.Errorf("failed to save new row due to rev being present: %s", r.Rev)
 	}
 
-	r.ID = fmt.Sprintf("section:%s:row:%s", sectionName, r.Name)
+	r.ID = fmt.Sprintf("section:%s:row:%s", r.Section, r.Name)
 	rev, err := m.db.Put(context.TODO(), r.ID, &r)
 	if err != nil {
 		return err
