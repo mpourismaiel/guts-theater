@@ -29,6 +29,9 @@ func (m *Models) seatCreateModel() error {
 			"seat-list-by-row": map[string]string{
 				"map": "function (doc) {\n if (!doc._id.match(/^section:[^:]+:row:[^:]+:seat:[^:]+$/)) {\n return;\n }\n emit([doc.section, doc.row], 1);\n }",
 			},
+			"seat-list-by-section": map[string]string{
+				"map": "function (doc) {\n if (!doc._id.match(/^section:[^:]+:row:[^:]+:seat:[^:]+$/)) {\n return;\n }\n emit(doc.section, 1);\n }",
+			},
 		},
 	})
 
@@ -85,6 +88,31 @@ func (m *Models) SeatGetByRow(sectionName string, rowName string) ([]*Seat, erro
 	docs, err := m.db.Query(context.TODO(), "_design/seat", "_view/seat-list-by-row", kivik.Options{
 		"include_docs": true,
 		"key":          []string{sectionName, rowName},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*Seat
+	for docs.Next() {
+		var doc Seat
+		if err := docs.ScanDoc(&doc); err != nil {
+			panic(err)
+		}
+		result = append(result, &doc)
+	}
+
+	if docs.Err() != nil {
+		panic(docs.Err())
+	}
+
+	return result, nil
+}
+
+func (m *Models) SeatGetBySection(sectionName string) ([]*Seat, error) {
+	docs, err := m.db.Query(context.TODO(), "_design/seat", "_view/seat-list-by-section", kivik.Options{
+		"include_docs": true,
+		"key":          sectionName,
 	})
 	if err != nil {
 		return nil, err
