@@ -13,5 +13,9 @@ func New(db *kivik.DB) *Models {
 		db: db,
 	}
 
+	models.sectionCreateModel()
+	models.rowCreateModel()
+	models.seatCreateModel()
+
 	return &models
 }
