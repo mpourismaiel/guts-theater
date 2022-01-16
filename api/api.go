@@ -29,6 +29,25 @@ func New(port string) error {
 
 	api.server.Router().Route("/", func(r chi.Router) {
 		r.Get("/seats", api.fetchSeats())
+		r.Get("/seats/{section}", api.fetchSeatsBySection())
+
+		r.Get("/section", api.fetchSections())
+		r.Post("/section", api.createSection())
+		r.Put("/section/{section}", api.updateSection())
+		r.Delete("/section/{section}", api.deleteSection())
+
+		r.Get("/section/{section}/rows", api.fetchRowsBySection())
+		r.Post("/section/{section}/row", api.createRow())
+		r.Put("/section/{section}/row/{row}", api.updateRow())
+		r.Delete("/section/{section}/row/{row}", api.deleteRow())
+
+		r.Get("/seats", api.fetchSeats())
+
+		r.Get("/section/{section}/seats", api.fetchSeatsBySection())
+		r.Post("/section/{section}/row/{row}/seat", api.createSeats())
+		r.Put("/section/{section}/row/{row}/seat/{seat}", api.updateSeat())
+		r.Delete("/section/{section}/row/{row}/seat/{seat}", api.deleteSeat())
+
 		r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("{\"ok\": true}"))
 		})

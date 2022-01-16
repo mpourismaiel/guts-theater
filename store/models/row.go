@@ -22,10 +22,17 @@ func (m *Models) rowCreateModel() error {
 			"row-list-by-section": map[string]string{
 				"map": "function (doc) {\n if (!doc._id.match(/section:[^:]+:row:[^:]+$/)) {\n return;\n }\n emit(doc.section, 1);\n }",
 			},
+			"row-list-by-name": map[string]string{
+				"map": "function (doc) {\n if (!doc._id.match(/section:[^:]+:row:[^:]+$/)) {\n return;\n }\n emit([doc.section, doc.name], 1);\n }",
+			},
 		},
 	})
 
 	return err
+}
+
+func rowCreateId(r *Row) string {
+	return fmt.Sprintf("section:%s:row:%s", r.Section, r.Name)
 }
 
 func (m *Models) RowSave(r *Row) error {
@@ -33,7 +40,7 @@ func (m *Models) RowSave(r *Row) error {
 		return fmt.Errorf("failed to save new row due to rev being present: %s", r.Rev)
 	}
 
-	r.ID = fmt.Sprintf("section:%s:row:%s", r.Section, r.Name)
+	r.ID = rowCreateId(r)
 	rev, err := m.db.Put(context.TODO(), r.ID, &r)
 	if err != nil {
 		return err
@@ -49,6 +56,7 @@ func (m *Models) RowUpdate(r *Row) error {
 		return fmt.Errorf("failed to update row (%s) because no rev was provided", r.Name)
 	}
 
+	r.ID = rowCreateId(r)
 	rev, err := m.db.Put(context.TODO(), r.ID, &r)
 	if err != nil {
 		return err
@@ -72,6 +80,29 @@ func (m *Models) RowDelete(r *Row) error {
 	log.Printf("Successfully deleted row: %s. New revision id is: %s", r.Name, rev)
 	r.Rev = rev
 	return nil
+}
+
+func (m *Models) RowGetByName(sectionName string, rowName string) (*Row, error) {
+	docs, err := m.db.Query(context.TODO(), "_design/row", "_view/row-list-by-name", kivik.Options{
+		"include_docs": true,
+		"key":          []string{sectionName, rowName},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var doc Row
+	for docs.Next() {
+		if err := docs.ScanDoc(&doc); err != nil {
+			panic(err)
+		}
+	}
+
+	if docs.Err() != nil {
+		panic(docs.Err())
+	}
+
+	return &doc, nil
 }
 
 func (m *Models) RowGetBySection(sectionName string) ([]*Row, error) {

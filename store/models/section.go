@@ -13,6 +13,7 @@ type Section struct {
 	Rev       string `json:"rev,omitempty"`
 	Name      string `json:"name"`
 	Elevation int    `json:"elevation"`
+	Curved    bool   `json:"curved"`
 }
 
 func (m *Models) sectionCreateModel() error {
@@ -28,12 +29,16 @@ func (m *Models) sectionCreateModel() error {
 	return err
 }
 
+func sectionCreateId(s *Section) string {
+	return fmt.Sprintf("section:%s", s.Name)
+}
+
 func (m *Models) SectionSave(s *Section) error {
 	if s.Rev != "" {
 		return fmt.Errorf("failed to save new section due to rev being present: %s", s.Rev)
 	}
 
-	s.ID = fmt.Sprintf("section:%s", s.Name)
+	s.ID = sectionCreateId(s)
 	rev, err := m.db.Put(context.TODO(), s.ID, &s)
 	if err != nil {
 		return err
@@ -49,6 +54,7 @@ func (m *Models) SectionUpdate(s *Section) error {
 		return fmt.Errorf("failed to update section (%s) because no rev was provided", s.Name)
 	}
 
+	s.ID = sectionCreateId(s)
 	rev, err := m.db.Put(context.TODO(), s.ID, &s)
 	if err != nil {
 		return err

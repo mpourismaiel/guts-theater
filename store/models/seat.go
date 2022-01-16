@@ -38,12 +38,16 @@ func (m *Models) seatCreateModel() error {
 	return err
 }
 
+func seatCreateId(s *Seat) string {
+	return fmt.Sprintf("section:%s:row:%s:seat:%s", s.Section, s.Row, s.Name)
+}
+
 func (m *Models) SeatSave(s *Seat) error {
 	if s.Rev != "" {
 		return fmt.Errorf("failed to save new seat due to rev being present: %s", s.Rev)
 	}
 
-	s.ID = fmt.Sprintf("section:%s:row:%s:seat:%s", s.Section, s.Row, s.Name)
+	s.ID = seatCreateId(s)
 	rev, err := m.db.Put(context.TODO(), s.ID, &s)
 	if err != nil {
 		return err
@@ -59,6 +63,7 @@ func (m *Models) SeatUpdate(s *Seat) error {
 		return fmt.Errorf("failed to update seat (%s) because no rev was provided", s.Name)
 	}
 
+	s.ID = seatCreateId(s)
 	rev, err := m.db.Put(context.TODO(), s.ID, &s)
 	if err != nil {
 		return err
@@ -82,6 +87,29 @@ func (m *Models) SeatDelete(s *Seat) error {
 	log.Printf("Successfully deleted seat: %s. New revision id is: %s", s.Name, rev)
 	s.Rev = rev
 	return nil
+}
+
+func (m *Models) SeatGetByName(sectionName string, rowName string, seatName string) (*Seat, error) {
+	docs, err := m.db.Query(context.TODO(), "_design/seat", "_view/seat-list-by-all", kivik.Options{
+		"include_docs": true,
+		"key":          []string{sectionName, rowName, seatName},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var doc Seat
+	for docs.Next() {
+		if err := docs.ScanDoc(&doc); err != nil {
+			panic(err)
+		}
+	}
+
+	if docs.Err() != nil {
+		panic(docs.Err())
+	}
+
+	return &doc, nil
 }
 
 func (m *Models) SeatGetByRow(sectionName string, rowName string) ([]*Seat, error) {
