@@ -10,7 +10,7 @@ import (
 
 type Section struct {
 	ID        string `json:"_id"`
-	Rev       string `json:"rev,omitempty"`
+	Rev       string `json:"_rev,omitempty"`
 	Name      string `json:"name"`
 	Elevation int    `json:"elevation"`
 	Curved    bool   `json:"curved"`

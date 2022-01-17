@@ -11,7 +11,7 @@ import (
 
 type Group struct {
 	ID      string `json:"_id"`
-	Rev     string `json:"rev,omitempty"`
+	Rev     string `json:"_rev,omitempty"`
 	Aisle   bool   `json:"aisle"`
 	Rank    string `json:"rank"`
 	Count   int    `json:"count"`

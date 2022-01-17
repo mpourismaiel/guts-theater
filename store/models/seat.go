@@ -10,7 +10,7 @@ import (
 
 type Seat struct {
 	ID      string `json:"_id"`
-	Rev     string `json:"rev,omitempty"`
+	Rev     string `json:"_rev,omitempty"`
 	Row     string `json:"row"`
 	Section string `json:"section"`
 	Name    string `json:"name"`
@@ -90,7 +90,7 @@ func (m *Models) SeatDelete(s *Seat) error {
 }
 
 func (m *Models) SeatGetByName(sectionName string, rowName string, seatName string) (*Seat, error) {
-	docs, err := m.db.Query(context.TODO(), "_design/seat", "_view/seat-list-by-all", kivik.Options{
+	docs, err := m.db.Query(context.TODO(), "_design/seat", "_view/seat-list-all", kivik.Options{
 		"include_docs": true,
 		"key":          []string{sectionName, rowName, seatName},
 	})

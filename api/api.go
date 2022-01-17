@@ -38,10 +38,7 @@ func New(port string) error {
 
 		r.Get("/section/{section}/rows", api.fetchRowsBySection())
 		r.Post("/section/{section}/row", api.createRow())
-		r.Put("/section/{section}/row/{row}", api.updateRow())
 		r.Delete("/section/{section}/row/{row}", api.deleteRow())
-
-		r.Get("/seats", api.fetchSeats())
 
 		r.Get("/section/{section}/seats", api.fetchSeatsBySection())
 		r.Post("/section/{section}/row/{row}/seat", api.createSeats())

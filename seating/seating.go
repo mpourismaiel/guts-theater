@@ -15,7 +15,7 @@ type row struct {
 type section struct {
 	Section *models.Section `json:"section"`
 	Rows    map[string]*row `json:"rows"`
-	Groups  []*models.Group `json:"groups"`
+	Groups  []*models.Group
 }
 
 type block struct {
@@ -124,14 +124,27 @@ func seatGroups(section section) []*models.Ticket {
 }
 
 func Process(m models.Models) {
-	log.Println("Starting process")
-	dbSections, err := m.SectionGetAll()
+	sections, err := GetSections(m)
 	if err != nil {
-		log.Fatalf("failed to load sections: %v", err)
+		log.Fatalln(err)
 		return
 	}
 
-	log.Println("Fetched sections")
+	for _, s := range sections {
+		tickets := seatGroups(*s)
+		for _, v := range tickets {
+			m.TicketSave(v)
+		}
+	}
+}
+
+func GetSections(m models.Models) ([]*section, error) {
+	dbSections, err := m.SectionGetAll()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load sections: %v", err)
+	}
+
+	var sections []*section
 	for _, dbSection := range dbSections {
 		s := section{
 			Section: dbSection,
@@ -139,11 +152,9 @@ func Process(m models.Models) {
 
 		rows, err := m.RowGetBySection(dbSection.Name)
 		if err != nil {
-			log.Fatalf("failed to load rows: %v", err)
-			return
+			return nil, fmt.Errorf("failed to load rows: %v", err)
 		}
 
-		log.Println("Fetched rows for section:", dbSection.Name)
 		s.Rows = make(map[string]*row)
 		for _, dbRow := range rows {
 			s.Rows[dbRow.Name] = &row{
@@ -153,26 +164,24 @@ func Process(m models.Models) {
 
 		seats, err := m.SeatGetBySection(dbSection.Name)
 		if err != nil {
-			log.Fatalf("failed to load seats: %v", err)
-			return
+			return nil, fmt.Errorf("failed to load seats: %v", err)
 		}
 
-		log.Println("Fetched seats for section:", dbSection.Name)
 		for _, dbSeat := range seats {
+			if s.Rows[dbSeat.Row] == nil {
+				continue
+			}
 			s.Rows[dbSeat.Row].Seats = append(s.Rows[dbSeat.Row].Seats, dbSeat)
 		}
 
 		groups, err := m.GroupGetBySection(dbSection.Name)
 		if err != nil {
-			log.Fatalf("failed to load groups: %v", err)
-			return
+			return nil, fmt.Errorf("failed to load groups: %v", err)
 		}
 
-		log.Println("Fetched groups for section:", dbSection.Name)
 		s.Groups = append(s.Groups, groups...)
-		tickets := seatGroups(s)
-		for _, v := range tickets {
-			m.TicketSave(v)
-		}
+		sections = append(sections, &s)
 	}
+
+	return sections, nil
 }

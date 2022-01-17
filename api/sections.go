@@ -15,9 +15,8 @@ type createSectionRequest struct {
 }
 
 type updateSectionRequest struct {
-	SectionName string `json:"name"`
-	Curved      bool   `json:"curved"`
-	Elevation   int    `json:"elevation"`
+	Curved    bool `json:"curved"`
+	Elevation int  `json:"elevation"`
 }
 
 func (a *ApiServer) fetchSections() http.HandlerFunc {
@@ -80,7 +79,7 @@ func (a *ApiServer) updateSection() http.HandlerFunc {
 			return
 		}
 
-		section.Name = s.SectionName
+		section.Curved = s.Curved
 		section.Elevation = s.Elevation
 		err = a.store.Models.SectionUpdate(section)
 		if err != nil {

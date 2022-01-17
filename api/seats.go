@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"mpourismaiel.dev/guts/seating"
 	"mpourismaiel.dev/guts/store/models"
 )
 
@@ -24,13 +25,13 @@ type updateSeatRequest struct {
 
 func (a *ApiServer) fetchSeats() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		seats, err := a.store.Models.SeatGetAll()
+		sections, err := seating.GetSections(*a.store.Models)
 		if err != nil {
 			rw.Write([]byte(err.Error()))
 			return
 		}
 
-		res, _ := json.Marshal(seats)
+		res, _ := json.Marshal(sections)
 		rw.Write(res)
 	}
 }
