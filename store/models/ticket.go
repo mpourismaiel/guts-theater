@@ -62,6 +62,21 @@ func (m *Models) TicketSave(t *Ticket) error {
 	return nil
 }
 
+func (m *Models) TicketDelete(t *Ticket) error {
+	if t.Rev == "" {
+		return fmt.Errorf("failed to delete ticket (%s) because no rev was provided", t.GroupId)
+	}
+
+	rev, err := m.db.Delete(context.TODO(), t.ID, t.Rev)
+	if err != nil {
+		panic(err)
+	}
+
+	log.Printf("Successfully deleted ticket: %s. New revision id is: %s", t.GroupId, rev)
+	t.Rev = rev
+	return nil
+}
+
 func (m *Models) TicketGetByGroupId(groupId string) (*Ticket, error) {
 	docs, err := m.db.Query(context.TODO(), "_design/ticket", "_view/ticket-get-by-groupid", kivik.Options{
 		"include_docs": true,

@@ -102,16 +102,25 @@ func seatGroup(group *models.Group, section section, allocatedSeats allocatedSea
 	return &models.Ticket{}, fmt.Errorf("no available block found")
 }
 
-func seatGroups(section section) []*models.Ticket {
+func seatGroups(section section, m models.Models) []*models.Ticket {
 	allocatedSeats := make(allocatedSeatsType)
 	var tickets []*models.Ticket
 
 	for _, group := range section.Groups {
+		t, err := m.TicketGetByGroupId(group.ID)
+		if err != nil {
+			panic(err)
+		}
+
+		if t.ID != "" {
+			m.TicketDelete(t)
+		}
+
 		ticket, err := seatGroup(group, section, allocatedSeats)
 		if err != nil {
 			log.Println("group", group)
 			log.Println("section", section)
-			panic(err)
+			log.Println("Unable to seat group", group.ID, "in section", section.Section.Name)
 		}
 
 		for _, seat := range ticket.Seats {
@@ -131,7 +140,7 @@ func Process(m models.Models) {
 	}
 
 	for _, s := range sections {
-		tickets := seatGroups(*s)
+		tickets := seatGroups(*s, m)
 		for _, v := range tickets {
 			m.TicketSave(v)
 		}
