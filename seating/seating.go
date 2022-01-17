@@ -1,7 +1,7 @@
 package seating
 
 import (
-	"encoding/json"
+	"fmt"
 	"log"
 
 	"mpourismaiel.dev/guts/store/models"
@@ -18,6 +18,111 @@ type section struct {
 	Groups  []*models.Group `json:"groups"`
 }
 
+type block struct {
+	hasAisle bool
+	rank     string
+	seats    []*models.Seat
+	row      *models.Row
+}
+
+type allocatedSeatsType map[string]struct{}
+
+func createAvailableBlocks(rows map[string]*row, allocatedSeats allocatedSeatsType) []block {
+	var availableBlocks []block
+	for _, row := range rows {
+		availableBlockInRow := block{
+			row: row.Row,
+		}
+
+		for j, seat := range row.Seats {
+			_, isSeatAllocated := allocatedSeats[seat.ID]
+
+			if seat.Broken || isSeatAllocated {
+				if len(availableBlockInRow.seats) > 0 {
+					availableBlocks = append(availableBlocks, availableBlockInRow)
+					availableBlockInRow.seats = []*models.Seat{}
+				}
+
+				continue
+			}
+
+			if len(availableBlockInRow.seats) > 0 && seat.Rank != availableBlockInRow.seats[len(availableBlockInRow.seats)-1].Rank {
+				availableBlocks = append(availableBlocks, availableBlockInRow)
+				availableBlockInRow.seats = []*models.Seat{}
+				continue
+			}
+
+			if len(availableBlockInRow.seats) == 0 {
+				availableBlockInRow = block{
+					row:  row.Row,
+					rank: seat.Rank,
+				}
+			}
+
+			if seat.Aisle {
+				availableBlockInRow.hasAisle = true
+			}
+
+			availableBlockInRow.seats = append(availableBlockInRow.seats, seat)
+
+			if j == len(row.Seats)-1 {
+				availableBlocks = append(availableBlocks, availableBlockInRow)
+			}
+		}
+	}
+
+	return availableBlocks
+}
+
+func seatGroup(group *models.Group, section section, allocatedSeats allocatedSeatsType) (*models.Ticket, error) {
+	availableBlocks := createAvailableBlocks(section.Rows, allocatedSeats)
+	for _, block := range availableBlocks {
+		if int(group.Count) > len(block.seats) || group.Rank != block.rank || (group.Aisle && !block.hasAisle) {
+			continue
+		}
+
+		availableSeats := block.seats[0:group.Count]
+		if group.Aisle && !availableSeats[0].Aisle {
+			availableSeats = block.seats[len(block.seats)-int(group.Count)+1:]
+		}
+
+		var seats []string
+		for _, seat := range availableSeats {
+			seats = append(seats, seat.ID)
+		}
+
+		ticket := models.Ticket{
+			GroupId: group.ID,
+			Seats:   seats,
+		}
+
+		return &ticket, nil
+	}
+
+	return &models.Ticket{}, fmt.Errorf("no available block found")
+}
+
+func seatGroups(section section) []*models.Ticket {
+	allocatedSeats := make(allocatedSeatsType)
+	var tickets []*models.Ticket
+
+	for _, group := range section.Groups {
+		ticket, err := seatGroup(group, section, allocatedSeats)
+		if err != nil {
+			log.Println("group", group)
+			log.Println("section", section)
+			panic(err)
+		}
+
+		for _, seat := range ticket.Seats {
+			allocatedSeats[seat] = struct{}{}
+		}
+		tickets = append(tickets, ticket)
+	}
+
+	return tickets
+}
+
 func Process(m models.Models) {
 	log.Println("Starting process")
 	dbSections, err := m.SectionGetAll()
@@ -27,9 +132,8 @@ func Process(m models.Models) {
 	}
 
 	log.Println("Fetched sections")
-	sections := make(map[string]*section)
 	for _, dbSection := range dbSections {
-		sections[dbSection.Name] = &section{
+		s := section{
 			Section: dbSection,
 		}
 
@@ -40,9 +144,9 @@ func Process(m models.Models) {
 		}
 
 		log.Println("Fetched rows for section:", dbSection.Name)
-		sections[dbSection.Name].Rows = make(map[string]*row)
+		s.Rows = make(map[string]*row)
 		for _, dbRow := range rows {
-			sections[dbSection.Name].Rows[dbRow.Name] = &row{
+			s.Rows[dbRow.Name] = &row{
 				Row: dbRow,
 			}
 		}
@@ -55,7 +159,7 @@ func Process(m models.Models) {
 
 		log.Println("Fetched seats for section:", dbSection.Name)
 		for _, dbSeat := range seats {
-			sections[dbSection.Name].Rows[dbSeat.Row].Seats = append(sections[dbSection.Name].Rows[dbSeat.Row].Seats, dbSeat)
+			s.Rows[dbSeat.Row].Seats = append(s.Rows[dbSeat.Row].Seats, dbSeat)
 		}
 
 		groups, err := m.GroupGetBySection(dbSection.Name)
@@ -65,13 +169,10 @@ func Process(m models.Models) {
 		}
 
 		log.Println("Fetched groups for section:", dbSection.Name)
-		sections[dbSection.Name].Groups = append(sections[dbSection.Name].Groups, groups...)
+		s.Groups = append(s.Groups, groups...)
+		tickets := seatGroups(s)
+		for _, v := range tickets {
+			m.TicketSave(v)
+		}
 	}
-
-	res, err := json.Marshal(sections)
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
-
-	log.Println(string(res))
 }
