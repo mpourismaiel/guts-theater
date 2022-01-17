@@ -22,6 +22,11 @@ func (a *ApiServer) fetchGroups() http.HandlerFunc {
 			return
 		}
 
+		if len(groups) == 0 {
+			rw.Write([]byte("[]"))
+			return
+		}
+
 		res, err := json.Marshal(groups)
 		if err != nil {
 			rw.Write([]byte(err.Error()))
@@ -34,7 +39,7 @@ func (a *ApiServer) fetchGroups() http.HandlerFunc {
 func (a *ApiServer) createGroup() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		var group createGroupRequest
-		err := json.NewDecoder(r.Body).Decode(&r)
+		err := json.NewDecoder(r.Body).Decode(&group)
 		if err != nil {
 			rw.Write([]byte(err.Error()))
 			return
