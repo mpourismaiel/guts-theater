@@ -64,6 +64,30 @@ func (m *Models) GroupSave(g *Group) error {
 	return nil
 }
 
+func (m *Models) GroupGetAll() ([]*Group, error) {
+	docs, err := m.db.Query(context.TODO(), "_design/group", "_view/group-get-by-id", kivik.Options{
+		"include_docs": true,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*Group
+	for docs.Next() {
+		var doc Group
+		if err := docs.ScanDoc(&doc); err != nil {
+			panic(err)
+		}
+		result = append(result, &doc)
+	}
+
+	if docs.Err() != nil {
+		panic(docs.Err())
+	}
+
+	return result, nil
+}
+
 func (m *Models) GroupGetBySection(sectionName string) ([]*Group, error) {
 	docs, err := m.db.Query(context.TODO(), "_design/group", "_view/group-list-by-section", kivik.Options{
 		"include_docs": true,

@@ -48,7 +48,12 @@ func New(port string) error {
 		r.Put("/section/{section}/row/{row}/seat/{seat}", api.updateSeat())
 		r.Delete("/section/{section}/row/{row}/seat/{seat}", api.deleteSeat())
 
-		r.Post("/seating-trigger", api.triggerSeating())
+		r.Get("/groups", api.fetchGroups())
+		r.Post("/groups", api.createGroup())
+
+		r.Get("/ticket/{groupId}", api.fetchGroupTicket())
+
+		r.Post("/trigger-seating", api.triggerSeating())
 
 		r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("{\"ok\": true}"))
