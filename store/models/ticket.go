@@ -21,10 +21,10 @@ func (m *Models) ticketCreateModel() error {
 		"id": "_design/ticket",
 		"views": map[string]interface{}{
 			"ticket-list-all": map[string]string{
-				"map": "function (doc) {\n if (!doc._id.match(/ticket:[^:]+$/)) {\n return;\n }\n emit(doc._id, 1);\n }",
+				"map": "function (doc) {\n if (!doc._id.match(/^ticket:[^:]+$/)) {\n return;\n }\n emit(doc._id, 1);\n }",
 			},
 			"ticket-get-by-groupid": map[string]string{
-				"map": "function (doc) {\n if (!doc._id.match(/ticket:[^:]+$/)) {\n return;\n }\n emit(ticket.groupId, 1);\n }",
+				"map": "function (doc) {\n if (!doc._id.match(/^ticket:[^:]+$/)) {\n return;\n }\n emit(doc.groupId, 1);\n }",
 			},
 		},
 	})
@@ -62,7 +62,7 @@ func (m *Models) TicketSave(t *Ticket) error {
 	return nil
 }
 
-func (m *Models) TicketGetByGroupId(groupId string) (*Group, error) {
+func (m *Models) TicketGetByGroupId(groupId string) (*Ticket, error) {
 	docs, err := m.db.Query(context.TODO(), "_design/ticket", "_view/ticket-get-by-groupid", kivik.Options{
 		"include_docs": true,
 		"key":          groupId,
@@ -71,7 +71,7 @@ func (m *Models) TicketGetByGroupId(groupId string) (*Group, error) {
 		return nil, err
 	}
 
-	var doc Group
+	var doc Ticket
 	for docs.Next() {
 		if err := docs.ScanDoc(&doc); err != nil {
 			panic(err)
