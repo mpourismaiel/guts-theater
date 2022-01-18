@@ -58,7 +58,7 @@ func (m *Models) SeatSave(s *Seat) error {
 		zap.String("seatName", s.Name),
 		zap.String("rev", rev),
 	}
-	m.logger.Info("Successfully stored new seat", fields...)
+	m.logger.Debug("Successfully stored new seat", fields...)
 	s.Rev = rev
 	return nil
 }
@@ -78,7 +78,7 @@ func (m *Models) SeatUpdate(s *Seat) error {
 		zap.String("seatName", s.Name),
 		zap.String("rev", rev),
 	}
-	m.logger.Info("Successfully updated seat", fields...)
+	m.logger.Debug("Successfully updated seat", fields...)
 	s.Rev = rev
 	return nil
 }
@@ -97,7 +97,7 @@ func (m *Models) SeatDelete(s *Seat) error {
 		zap.String("seatName", s.Name),
 		zap.String("rev", rev),
 	}
-	m.logger.Info("Successfully deleted seat", fields...)
+	m.logger.Debug("Successfully deleted seat", fields...)
 	s.Rev = rev
 	return nil
 }

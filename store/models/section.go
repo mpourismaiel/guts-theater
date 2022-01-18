@@ -49,7 +49,7 @@ func (m *Models) SectionSave(s *Section) error {
 		zap.String("sectionName", s.Name),
 		zap.String("rev", rev),
 	}
-	m.logger.Info("Successfully stored section", fields...)
+	m.logger.Debug("Successfully stored section", fields...)
 	s.Rev = rev
 	return nil
 }
@@ -69,7 +69,7 @@ func (m *Models) SectionUpdate(s *Section) error {
 		zap.String("sectionName", s.Name),
 		zap.String("rev", rev),
 	}
-	m.logger.Info("Successfully updated section", fields...)
+	m.logger.Debug("Successfully updated section", fields...)
 	s.Rev = rev
 	return nil
 }
@@ -88,7 +88,7 @@ func (m *Models) SectionDelete(s *Section) error {
 		zap.String("sectionName", s.Name),
 		zap.String("rev", rev),
 	}
-	m.logger.Info("Successfully deleted section", fields...)
+	m.logger.Debug("Successfully deleted section", fields...)
 	s.Rev = rev
 	return nil
 }

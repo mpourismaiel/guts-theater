@@ -51,7 +51,7 @@ func (m *Models) RowSave(r *Row) error {
 		zap.String("rowName", r.Name),
 		zap.String("rev", rev),
 	}
-	m.logger.Info("Successfully stored new row", fields...)
+	m.logger.Debug("Successfully stored new row", fields...)
 	r.Rev = rev
 	return nil
 }
@@ -71,7 +71,7 @@ func (m *Models) RowUpdate(r *Row) error {
 		zap.String("rowName", r.Name),
 		zap.String("rev", rev),
 	}
-	m.logger.Info("Successfully updated row", fields...)
+	m.logger.Debug("Successfully updated row", fields...)
 	r.Rev = rev
 	return nil
 }
@@ -90,7 +90,7 @@ func (m *Models) RowDelete(r *Row) error {
 		zap.String("rowName", r.Name),
 		zap.String("rev", rev),
 	}
-	m.logger.Info("Successfully deleted row", fields...)
+	m.logger.Debug("Successfully deleted row", fields...)
 	r.Rev = rev
 	return nil
 }

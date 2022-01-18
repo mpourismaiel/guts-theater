@@ -62,7 +62,7 @@ func (m *Models) TicketSave(t *Ticket) error {
 		zap.String("ticketId", t.ID),
 		zap.String("rev", rev),
 	}
-	m.logger.Info("Successfully stored ticket", fields...)
+	m.logger.Debug("Successfully stored ticket", fields...)
 	t.Rev = rev
 	return nil
 }
@@ -81,7 +81,7 @@ func (m *Models) TicketDelete(t *Ticket) error {
 		zap.String("ticketId", t.ID),
 		zap.String("rev", rev),
 	}
-	m.logger.Info("Successfully deleted ticket", fields...)
+	m.logger.Debug("Successfully deleted ticket", fields...)
 	t.Rev = rev
 	return nil
 }

@@ -64,7 +64,7 @@ func (m *Models) GroupSave(g *Group) error {
 		zap.String("groupId", g.ID),
 		zap.String("rev", rev),
 	}
-	m.logger.Info("Successfully stored new group", fields...)
+	m.logger.Debug("Successfully stored new group", fields...)
 	g.Rev = rev
 	return nil
 }
