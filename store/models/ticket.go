@@ -86,6 +86,30 @@ func (m *Models) TicketDelete(t *Ticket) error {
 	return nil
 }
 
+func (m *Models) TicketGetAll() ([]*Ticket, error) {
+	docs, err := m.db.Query(context.TODO(), "_design/ticket", "_view/ticket-list-all", kivik.Options{
+		"include_docs": true,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*Ticket
+	for docs.Next() {
+		var doc Ticket
+		if err := docs.ScanDoc(&doc); err != nil {
+			panic(err)
+		}
+		result = append(result, &doc)
+	}
+
+	if docs.Err() != nil {
+		panic(docs.Err())
+	}
+
+	return result, nil
+}
+
 func (m *Models) TicketGetByGroupId(groupId string) (*Ticket, error) {
 	docs, err := m.db.Query(context.TODO(), "_design/ticket", "_view/ticket-get-by-groupid", kivik.Options{
 		"include_docs": true,

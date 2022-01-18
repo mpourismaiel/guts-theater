@@ -54,6 +54,7 @@ func New(address string, port string, dbUser string, dbPassword string, logger *
 		r.Get("/groups", api.fetchGroups())
 		r.Post("/groups", api.createGroup())
 
+		r.Get("/ticket", api.fetchTickets())
 		r.Get("/ticket/{groupId}", api.fetchGroupTicket())
 
 		r.Post("/trigger-seating", api.triggerSeating())
