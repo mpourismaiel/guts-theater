@@ -9,6 +9,7 @@ package seating
 import (
 	"fmt"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/mpourismaiel/guts-theater/store/models"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -120,6 +121,7 @@ func (s *seating) seatGroups(section section, m models.Models) []*models.Ticket 
 	for _, group := range section.Groups {
 		t, err := m.TicketGetByGroupId(group.ID)
 		if err != nil {
+			sentry.CaptureException(err)
 			s.logger.Fatal("could not load tickets")
 		}
 

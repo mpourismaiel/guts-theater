@@ -72,6 +72,12 @@ Post    /trigger-seating
 
 ## Environment variables
 
+- **SENTRY_DSN**
+
+  type: string
+
+  default: empty string
+
 - **ADDRESS**
 
   type: string

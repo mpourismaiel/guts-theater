@@ -9,10 +9,12 @@ type Config struct {
 	DbUser     string
 	DbPassword string
 	DbName     string
+	SentryDns  string
 	TestMode   bool
 }
 
 func Setup() *Config {
+	sentryDns := os.Getenv("SENTRY_DSN")
 	address := os.Getenv("ADDRESS")
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -40,6 +42,7 @@ func Setup() *Config {
 	}
 
 	return &Config{
+		SentryDns:  sentryDns,
 		Address:    address,
 		Port:       port,
 		DbHost:     dbHost,
