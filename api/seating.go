@@ -8,7 +8,7 @@ import (
 
 func (a *ApiServer) triggerSeating() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		go seating.Process(*a.store.Models)
+		go seating.Process(*a.store.Models, a.logger)
 		rw.Write([]byte("{\"ok\": true}"))
 	}
 }

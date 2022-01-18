@@ -3,9 +3,10 @@ package models
 import (
 	"context"
 	"fmt"
-	"log"
 
 	kivik "github.com/go-kivik/kivik/v3"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type Row struct {
@@ -46,7 +47,11 @@ func (m *Models) RowSave(r *Row) error {
 		return err
 	}
 
-	log.Printf("Successfully stored new row: %s with revision ID: %s", r.Name, rev)
+	fields := []zapcore.Field{
+		zap.String("rowName", r.Name),
+		zap.String("rev", rev),
+	}
+	m.logger.Info("Successfully stored new row", fields...)
 	r.Rev = rev
 	return nil
 }
@@ -62,7 +67,11 @@ func (m *Models) RowUpdate(r *Row) error {
 		return err
 	}
 
-	log.Printf("Successfully updated row: %s with revision ID: %s", r.Name, rev)
+	fields := []zapcore.Field{
+		zap.String("rowName", r.Name),
+		zap.String("rev", rev),
+	}
+	m.logger.Info("Successfully updated row", fields...)
 	r.Rev = rev
 	return nil
 }
@@ -77,7 +86,11 @@ func (m *Models) RowDelete(r *Row) error {
 		panic(err)
 	}
 
-	log.Printf("Successfully deleted row: %s. New revision id is: %s", r.Name, rev)
+	fields := []zapcore.Field{
+		zap.String("rowName", r.Name),
+		zap.String("rev", rev),
+	}
+	m.logger.Info("Successfully deleted row", fields...)
 	r.Rev = rev
 	return nil
 }

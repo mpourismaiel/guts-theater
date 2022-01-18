@@ -2,10 +2,15 @@ package seating
 
 import (
 	"fmt"
-	"log"
 
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"mpourismaiel.dev/guts/store/models"
 )
+
+type seating struct {
+	logger *zap.Logger
+}
 
 type row struct {
 	Row   *models.Row    `json:"row"`
@@ -27,7 +32,7 @@ type block struct {
 
 type allocatedSeatsType map[string]struct{}
 
-func createAvailableBlocks(rows map[string]*row, allocatedSeats allocatedSeatsType) []block {
+func (s *seating) createAvailableBlocks(rows map[string]*row, allocatedSeats allocatedSeatsType) []block {
 	var availableBlocks []block
 	for _, row := range rows {
 		availableBlockInRow := block{
@@ -74,8 +79,8 @@ func createAvailableBlocks(rows map[string]*row, allocatedSeats allocatedSeatsTy
 	return availableBlocks
 }
 
-func seatGroup(group *models.Group, section section, allocatedSeats allocatedSeatsType) (*models.Ticket, error) {
-	availableBlocks := createAvailableBlocks(section.Rows, allocatedSeats)
+func (s *seating) seatGroup(group *models.Group, section section, allocatedSeats allocatedSeatsType) (*models.Ticket, error) {
+	availableBlocks := s.createAvailableBlocks(section.Rows, allocatedSeats)
 	for _, block := range availableBlocks {
 		if int(group.Count) > len(block.seats) || group.Rank != block.rank || (group.Aisle && !block.hasAisle) {
 			continue
@@ -102,7 +107,7 @@ func seatGroup(group *models.Group, section section, allocatedSeats allocatedSea
 	return &models.Ticket{}, fmt.Errorf("no available block found")
 }
 
-func seatGroups(section section, m models.Models) []*models.Ticket {
+func (s *seating) seatGroups(section section, m models.Models) []*models.Ticket {
 	allocatedSeats := make(allocatedSeatsType)
 	var tickets []*models.Ticket
 
@@ -116,11 +121,14 @@ func seatGroups(section section, m models.Models) []*models.Ticket {
 			m.TicketDelete(t)
 		}
 
-		ticket, err := seatGroup(group, section, allocatedSeats)
+		ticket, err := s.seatGroup(group, section, allocatedSeats)
 		if err != nil {
-			log.Println("group", group)
-			log.Println("section", section)
-			log.Println("Unable to seat group", group.ID, "in section", section.Section.Name)
+			fields := []zapcore.Field{
+				zap.String("group", group.ID),
+				zap.String("section", section.Section.Name),
+			}
+			s.logger.Warn("Unable to seat group", fields...)
+			continue
 		}
 
 		for _, seat := range ticket.Seats {
@@ -132,22 +140,25 @@ func seatGroups(section section, m models.Models) []*models.Ticket {
 	return tickets
 }
 
-func Process(m models.Models) {
-	sections, err := GetSections(m)
+func Process(m models.Models, logger *zap.Logger) {
+	s := &seating{
+		logger: logger,
+	}
+	sections, err := GetSections(m, logger)
 	if err != nil {
-		log.Fatalln(err)
+		s.logger.Error(err.Error())
 		return
 	}
 
-	for _, s := range sections {
-		tickets := seatGroups(*s, m)
+	for _, section := range sections {
+		tickets := s.seatGroups(*section, m)
 		for _, v := range tickets {
 			m.TicketSave(v)
 		}
 	}
 }
 
-func GetSections(m models.Models) ([]*section, error) {
+func GetSections(m models.Models, logger *zap.Logger) ([]*section, error) {
 	dbSections, err := m.SectionGetAll()
 	if err != nil {
 		return nil, fmt.Errorf("failed to load sections: %v", err)

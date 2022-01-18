@@ -3,9 +3,10 @@ package models
 import (
 	"context"
 	"fmt"
-	"log"
 
 	kivik "github.com/go-kivik/kivik/v3"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type Seat struct {
@@ -53,7 +54,11 @@ func (m *Models) SeatSave(s *Seat) error {
 		return err
 	}
 
-	log.Printf("Successfully stored new seat: %s with revision ID: %s", s.Name, rev)
+	fields := []zapcore.Field{
+		zap.String("seatName", s.Name),
+		zap.String("rev", rev),
+	}
+	m.logger.Info("Successfully stored new seat", fields...)
 	s.Rev = rev
 	return nil
 }
@@ -69,7 +74,11 @@ func (m *Models) SeatUpdate(s *Seat) error {
 		return err
 	}
 
-	log.Printf("Successfully updated seat: %s with revision ID: %s", s.Name, rev)
+	fields := []zapcore.Field{
+		zap.String("seatName", s.Name),
+		zap.String("rev", rev),
+	}
+	m.logger.Info("Successfully updated seat", fields...)
 	s.Rev = rev
 	return nil
 }
@@ -84,7 +93,11 @@ func (m *Models) SeatDelete(s *Seat) error {
 		panic(err)
 	}
 
-	log.Printf("Successfully deleted seat: %s. New revision id is: %s", s.Name, rev)
+	fields := []zapcore.Field{
+		zap.String("seatName", s.Name),
+		zap.String("rev", rev),
+	}
+	m.logger.Info("Successfully deleted seat", fields...)
 	s.Rev = rev
 	return nil
 }

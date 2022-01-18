@@ -3,9 +3,10 @@ package models
 import (
 	"context"
 	"fmt"
-	"log"
 
 	kivik "github.com/go-kivik/kivik/v3"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type Section struct {
@@ -44,7 +45,11 @@ func (m *Models) SectionSave(s *Section) error {
 		return err
 	}
 
-	log.Printf("Successfully stored new section: %s with revision ID: %s", s.Name, rev)
+	fields := []zapcore.Field{
+		zap.String("sectionName", s.Name),
+		zap.String("rev", rev),
+	}
+	m.logger.Info("Successfully stored section", fields...)
 	s.Rev = rev
 	return nil
 }
@@ -60,7 +65,11 @@ func (m *Models) SectionUpdate(s *Section) error {
 		return err
 	}
 
-	log.Printf("Successfully updated section: %s with revision ID: %s", s.Name, rev)
+	fields := []zapcore.Field{
+		zap.String("sectionName", s.Name),
+		zap.String("rev", rev),
+	}
+	m.logger.Info("Successfully updated section", fields...)
 	s.Rev = rev
 	return nil
 }
@@ -75,7 +84,11 @@ func (m *Models) SectionDelete(s *Section) error {
 		panic(err)
 	}
 
-	log.Printf("Successfully deleted section: %s. New revision id is: %s", s.Name, rev)
+	fields := []zapcore.Field{
+		zap.String("sectionName", s.Name),
+		zap.String("rev", rev),
+	}
+	m.logger.Info("Successfully deleted section", fields...)
 	s.Rev = rev
 	return nil
 }

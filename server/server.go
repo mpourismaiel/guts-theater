@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"sync"
@@ -10,18 +9,26 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"moul.io/chizap"
 )
 
 type Server struct {
 	router *chi.Mux
 	server *http.Server
 	port   string
+	addr   string
+	logger *zap.Logger
 }
 
-func New(port string) (*Server, error) {
+func New(address string, port string, logger *zap.Logger) (*Server, error) {
 	r := chi.NewRouter()
 
-	r.Use(middleware.Logger)
+	r.Use(chizap.New(logger, &chizap.Opts{
+		WithReferer:   true,
+		WithUserAgent: true,
+	}))
 	r.Use(middleware.CleanPath)
 	r.Use(middleware.Recoverer)
 	r.Use(cors.Handler(cors.Options{
@@ -34,13 +41,15 @@ func New(port string) (*Server, error) {
 
 	return &Server{
 		router: r,
+		addr:   address,
 		port:   port,
+		logger: logger,
 	}, nil
 }
 
 func (s *Server) Serve() error {
 	s.server = &http.Server{
-		Addr:    net.JoinHostPort("0.0.0.0", s.port),
+		Addr:    net.JoinHostPort(s.addr, s.port),
 		Handler: s.router,
 	}
 
@@ -53,12 +62,19 @@ func (s *Server) Serve() error {
 	wg.Add(1)
 	go func() {
 		if err = s.server.Serve(listener); err != nil {
-			log.Fatalf("http.Server.Serve failed on address %s: %v", s.server.Addr, err)
+			fields := []zapcore.Field{
+				zap.String("address", s.server.Addr),
+				zap.String("error", err.Error()),
+			}
+			s.logger.Error("http.Server.Serve failed on address", fields...)
 		}
 		wg.Done()
 	}()
 
-	log.Println("Server running on:", s.server.Addr)
+	fields := []zapcore.Field{
+		zap.String("address", s.server.Addr),
+	}
+	s.logger.Info("Server running on", fields...)
 	wg.Wait()
 	return nil
 }

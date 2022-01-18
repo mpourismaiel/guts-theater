@@ -3,10 +3,11 @@ package models
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/go-kivik/kivik/v3"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type Group struct {
@@ -59,7 +60,11 @@ func (m *Models) GroupSave(g *Group) error {
 		return err
 	}
 
-	log.Printf("Successfully stored new group: %s with revision ID: %s", g.ID, rev)
+	fields := []zapcore.Field{
+		zap.String("groupId", g.ID),
+		zap.String("rev", rev),
+	}
+	m.logger.Info("Successfully stored new group", fields...)
 	g.Rev = rev
 	return nil
 }

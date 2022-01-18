@@ -25,7 +25,7 @@ type updateSeatRequest struct {
 
 func (a *ApiServer) fetchSeats() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		sections, err := seating.GetSections(*a.store.Models)
+		sections, err := seating.GetSections(*a.store.Models, a.logger)
 		if err != nil {
 			rw.Write([]byte(err.Error()))
 			return

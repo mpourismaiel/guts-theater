@@ -3,10 +3,11 @@ package models
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/go-kivik/kivik/v3"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type Ticket struct {
@@ -57,7 +58,11 @@ func (m *Models) TicketSave(t *Ticket) error {
 		return err
 	}
 
-	log.Printf("Successfully stored new ticket: %s with revision ID: %s", t.ID, rev)
+	fields := []zapcore.Field{
+		zap.String("ticketId", t.ID),
+		zap.String("rev", rev),
+	}
+	m.logger.Info("Successfully stored ticket", fields...)
 	t.Rev = rev
 	return nil
 }
@@ -72,7 +77,11 @@ func (m *Models) TicketDelete(t *Ticket) error {
 		panic(err)
 	}
 
-	log.Printf("Successfully deleted ticket: %s. New revision id is: %s", t.GroupId, rev)
+	fields := []zapcore.Field{
+		zap.String("ticketId", t.ID),
+		zap.String("rev", rev),
+	}
+	m.logger.Info("Successfully deleted ticket", fields...)
 	t.Rev = rev
 	return nil
 }
