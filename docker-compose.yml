@@ -28,7 +28,7 @@ services:
       context: ../guts-theater-fe
       dockerfile: Dockerfile
     ports:
-      - "4005:4005"
+      - "4005:80"
     environment:
       API_HOST: "guts-theater:4000"
     depends_on:

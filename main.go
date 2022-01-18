@@ -24,7 +24,7 @@ func main() {
 
 	dbHost := os.Getenv("DB_HOST")
 	if dbHost == "" {
-		dbHost = "admin"
+		dbHost = "localhost"
 	}
 
 	dbUser := os.Getenv("DB_USER")

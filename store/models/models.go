@@ -3,7 +3,6 @@ package models
 import (
 	kivik "github.com/go-kivik/kivik/v3"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	"go.uber.org/zap"
 )
 
@@ -14,7 +13,7 @@ type Models struct {
 
 // prometheus variables
 var (
-	dbCall = promauto.NewCounterVec(prometheus.CounterOpts{
+	dbCall = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name:        "guts_theater_db_call_total",
 		Help:        "The total number of calls to database",
 		ConstLabels: prometheus.Labels{"service": "guts"},

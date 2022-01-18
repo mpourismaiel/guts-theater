@@ -23,7 +23,7 @@ func New(dbHost string, dbName string, dbUser string, dbPassword string, logger 
 	}
 
 	logger.Info("Connect to database")
-	client, err := kivik.New("couch", fmt.Sprintf("http://%s:%s@localhost:5984/", dbUser, dbPassword))
+	client, err := kivik.New("couch", fmt.Sprintf("http://%s:%s@%s:5984/", dbUser, dbPassword, dbHost))
 	if err != nil {
 		return nil, err
 	}

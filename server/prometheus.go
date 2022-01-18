@@ -2,7 +2,6 @@ package server
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 var (
@@ -17,7 +16,7 @@ var (
 		},
 		[]string{"code", "method", "path"},
 	)
-	httpDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
+	httpDuration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:        "guts_theater_http_duration_seconds",
 		Help:        "Duration of HTTP requests.",
 		ConstLabels: prometheus.Labels{"service": "guts"},
