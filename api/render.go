@@ -24,12 +24,6 @@ func (s *ApiServer) renderStringAsJSON(rw http.ResponseWriter, code int, v strin
 	_, _ = rw.Write([]byte(v))
 }
 
-func (s *ApiServer) renderString(rw http.ResponseWriter, code int, v string) {
-	rw.Header().Set("Content-Type", "plain/text")
-	rw.WriteHeader(code)
-	_, _ = rw.Write([]byte(v))
-}
-
 func (s *ApiServer) renderJSON(rw http.ResponseWriter, code int, v interface{}) {
 	rw.Header().Set("Content-Type", "application/json")
 	b := new(bytes.Buffer)

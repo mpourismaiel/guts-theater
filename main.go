@@ -37,7 +37,7 @@ func main() {
 		dbPassword = "password"
 	}
 
-	if err := api.New(address, port, dbHost, dbUser, dbPassword, logger); err != nil {
+	if _, err := api.New(address, port, dbHost, dbUser, dbPassword, logger); err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}

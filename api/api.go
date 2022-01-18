@@ -19,15 +19,15 @@ type ApiServer struct {
 // creates a new server and store and registers routes. such a package can be created
 // multiple times for multiservice purposes (some code changes required but the
 // code has been written with microservice compatibility in mind)
-func New(address string, port string, dbHost string, dbUser string, dbPassword string, logger *zap.Logger) error {
+func New(address string, port string, dbHost string, dbUser string, dbPassword string, logger *zap.Logger) (*ApiServer, error) {
 	s, err := server.New(address, port, logger)
 	if err != nil {
-		return fmt.Errorf("failed to create server for API: %v", err)
+		return nil, fmt.Errorf("failed to create server for API: %v", err)
 	}
 
 	o, err := store.New(dbHost, "guts", dbUser, dbPassword, logger)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	api := ApiServer{
@@ -71,5 +71,5 @@ func New(address string, port string, dbHost string, dbUser string, dbPassword s
 
 	api.server.Serve()
 
-	return nil
+	return &api, nil
 }
