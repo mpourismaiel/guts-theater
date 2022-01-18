@@ -9,6 +9,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// type definition for document
 type Row struct {
 	ID      string `json:"_id"`
 	Rev     string `json:"_rev,omitempty"`
@@ -28,6 +29,7 @@ func (m *Models) rowCreateModel() error {
 			},
 		},
 	})
+	dbCall.WithLabelValues("row", "migration").Inc()
 
 	return err
 }
@@ -46,6 +48,7 @@ func (m *Models) RowSave(r *Row) error {
 	if err != nil {
 		return err
 	}
+	dbCall.WithLabelValues("row", "save").Inc()
 
 	fields := []zapcore.Field{
 		zap.String("rowName", r.Name),
@@ -66,6 +69,7 @@ func (m *Models) RowUpdate(r *Row) error {
 	if err != nil {
 		return err
 	}
+	dbCall.WithLabelValues("row", "update").Inc()
 
 	fields := []zapcore.Field{
 		zap.String("rowName", r.Name),
@@ -83,8 +87,9 @@ func (m *Models) RowDelete(r *Row) error {
 
 	rev, err := m.db.Delete(context.TODO(), r.ID, r.Rev)
 	if err != nil {
-		panic(err)
+		return err
 	}
+	dbCall.WithLabelValues("row", "delete").Inc()
 
 	fields := []zapcore.Field{
 		zap.String("rowName", r.Name),
@@ -103,16 +108,17 @@ func (m *Models) RowGetByName(sectionName string, rowName string) (*Row, error) 
 	if err != nil {
 		return nil, err
 	}
+	dbCall.WithLabelValues("row", "query").Inc()
 
 	var doc Row
 	for docs.Next() {
 		if err := docs.ScanDoc(&doc); err != nil {
-			panic(err)
+			return nil, err
 		}
 	}
 
 	if docs.Err() != nil {
-		panic(docs.Err())
+		return nil, docs.Err()
 	}
 
 	return &doc, nil
@@ -126,18 +132,19 @@ func (m *Models) RowGetBySection(sectionName string) ([]*Row, error) {
 	if err != nil {
 		return nil, err
 	}
+	dbCall.WithLabelValues("row", "query").Inc()
 
 	var result []*Row
 	for docs.Next() {
 		var doc Row
 		if err := docs.ScanDoc(&doc); err != nil {
-			panic(err)
+			return nil, err
 		}
 		result = append(result, &doc)
 	}
 
 	if docs.Err() != nil {
-		panic(docs.Err())
+		return nil, docs.Err()
 	}
 
 	return result, nil

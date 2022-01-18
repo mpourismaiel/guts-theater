@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// type definition for document
 type Group struct {
 	ID      string `json:"_id"`
 	Rev     string `json:"_rev,omitempty"`
@@ -31,6 +32,7 @@ func (m *Models) groupCreateModel() error {
 			},
 		},
 	})
+	dbCall.WithLabelValues("group", "migration").Inc()
 
 	return err
 }
@@ -53,6 +55,7 @@ func (m *Models) GroupSave(g *Group) error {
 	if err != nil {
 		return err
 	}
+	dbCall.WithLabelValues("group", "save").Inc()
 
 	g.ID = id
 	rev, err := m.db.Put(context.TODO(), g.ID, &g)
@@ -76,18 +79,19 @@ func (m *Models) GroupGetAll() ([]*Group, error) {
 	if err != nil {
 		return nil, err
 	}
+	dbCall.WithLabelValues("group", "query").Inc()
 
 	var result []*Group
 	for docs.Next() {
 		var doc Group
 		if err := docs.ScanDoc(&doc); err != nil {
-			panic(err)
+			return nil, err
 		}
 		result = append(result, &doc)
 	}
 
 	if docs.Err() != nil {
-		panic(docs.Err())
+		return nil, docs.Err()
 	}
 
 	return result, nil
@@ -101,18 +105,19 @@ func (m *Models) GroupGetBySection(sectionName string) ([]*Group, error) {
 	if err != nil {
 		return nil, err
 	}
+	dbCall.WithLabelValues("group", "query").Inc()
 
 	var result []*Group
 	for docs.Next() {
 		var doc Group
 		if err := docs.ScanDoc(&doc); err != nil {
-			panic(err)
+			return nil, err
 		}
 		result = append(result, &doc)
 	}
 
 	if docs.Err() != nil {
-		panic(docs.Err())
+		return nil, docs.Err()
 	}
 
 	return result, nil
@@ -126,16 +131,17 @@ func (m *Models) GroupGetById(groupId string) (*Group, error) {
 	if err != nil {
 		return nil, err
 	}
+	dbCall.WithLabelValues("group", "query").Inc()
 
 	var doc Group
 	for docs.Next() {
 		if err := docs.ScanDoc(&doc); err != nil {
-			panic(err)
+			return nil, err
 		}
 	}
 
 	if docs.Err() != nil {
-		panic(docs.Err())
+		return nil, docs.Err()
 	}
 
 	return &doc, nil

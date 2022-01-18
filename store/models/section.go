@@ -9,6 +9,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// type definition for document
 type Section struct {
 	ID        string `json:"_id"`
 	Rev       string `json:"_rev,omitempty"`
@@ -26,6 +27,7 @@ func (m *Models) sectionCreateModel() error {
 			},
 		},
 	})
+	dbCall.WithLabelValues("section", "migration").Inc()
 
 	return err
 }
@@ -44,6 +46,7 @@ func (m *Models) SectionSave(s *Section) error {
 	if err != nil {
 		return err
 	}
+	dbCall.WithLabelValues("section", "save").Inc()
 
 	fields := []zapcore.Field{
 		zap.String("sectionName", s.Name),
@@ -64,6 +67,7 @@ func (m *Models) SectionUpdate(s *Section) error {
 	if err != nil {
 		return err
 	}
+	dbCall.WithLabelValues("section", "update").Inc()
 
 	fields := []zapcore.Field{
 		zap.String("sectionName", s.Name),
@@ -81,8 +85,9 @@ func (m *Models) SectionDelete(s *Section) error {
 
 	rev, err := m.db.Delete(context.TODO(), s.ID, s.Rev)
 	if err != nil {
-		panic(err)
+		return err
 	}
+	dbCall.WithLabelValues("section", "delete").Inc()
 
 	fields := []zapcore.Field{
 		zap.String("sectionName", s.Name),
@@ -100,6 +105,7 @@ func (m *Models) SectionGetAll() ([]*Section, error) {
 	if err != nil {
 		return nil, err
 	}
+	dbCall.WithLabelValues("section", "query").Inc()
 
 	var result []*Section
 	for docs.Next() {
@@ -125,6 +131,7 @@ func (m *Models) SectionGetByName(name string) (*Section, error) {
 	if err != nil {
 		return nil, err
 	}
+	dbCall.WithLabelValues("section", "query").Inc()
 
 	var doc Section
 	for docs.Next() {

@@ -14,6 +14,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"moul.io/chizap"
@@ -36,6 +37,7 @@ func New(address string, port string, logger *zap.Logger) (*Server, error) {
 	}))
 	r.Use(middleware.CleanPath)
 	r.Use(middleware.Recoverer)
+	r.Use(patternHandler)
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"https://*", "http://*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -43,6 +45,8 @@ func New(address string, port string, logger *zap.Logger) (*Server, error) {
 		AllowCredentials: false,
 		MaxAge:           300,
 	}))
+
+	r.Handle("/metrics", promhttp.Handler())
 
 	return &Server{
 		router: r,

@@ -9,6 +9,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// type definition for document
 type Seat struct {
 	ID      string `json:"_id"`
 	Rev     string `json:"_rev,omitempty"`
@@ -35,6 +36,7 @@ func (m *Models) seatCreateModel() error {
 			},
 		},
 	})
+	dbCall.WithLabelValues("seat", "migration").Inc()
 
 	return err
 }
@@ -53,6 +55,7 @@ func (m *Models) SeatSave(s *Seat) error {
 	if err != nil {
 		return err
 	}
+	dbCall.WithLabelValues("seat", "save").Inc()
 
 	fields := []zapcore.Field{
 		zap.String("seatName", s.Name),
@@ -73,6 +76,7 @@ func (m *Models) SeatUpdate(s *Seat) error {
 	if err != nil {
 		return err
 	}
+	dbCall.WithLabelValues("seat", "update").Inc()
 
 	fields := []zapcore.Field{
 		zap.String("seatName", s.Name),
@@ -90,8 +94,9 @@ func (m *Models) SeatDelete(s *Seat) error {
 
 	rev, err := m.db.Delete(context.TODO(), s.ID, s.Rev)
 	if err != nil {
-		panic(err)
+		return err
 	}
+	dbCall.WithLabelValues("seat", "delete").Inc()
 
 	fields := []zapcore.Field{
 		zap.String("seatName", s.Name),
@@ -110,16 +115,17 @@ func (m *Models) SeatGetByName(sectionName string, rowName string, seatName stri
 	if err != nil {
 		return nil, err
 	}
+	dbCall.WithLabelValues("seat", "query").Inc()
 
 	var doc Seat
 	for docs.Next() {
 		if err := docs.ScanDoc(&doc); err != nil {
-			panic(err)
+			return nil, err
 		}
 	}
 
 	if docs.Err() != nil {
-		panic(docs.Err())
+		return nil, err
 	}
 
 	return &doc, nil
@@ -133,18 +139,19 @@ func (m *Models) SeatGetByRow(sectionName string, rowName string) ([]*Seat, erro
 	if err != nil {
 		return nil, err
 	}
+	dbCall.WithLabelValues("seat", "query").Inc()
 
 	var result []*Seat
 	for docs.Next() {
 		var doc Seat
 		if err := docs.ScanDoc(&doc); err != nil {
-			panic(err)
+			return nil, err
 		}
 		result = append(result, &doc)
 	}
 
 	if docs.Err() != nil {
-		panic(docs.Err())
+		return nil, err
 	}
 
 	return result, nil
@@ -158,18 +165,19 @@ func (m *Models) SeatGetBySection(sectionName string) ([]*Seat, error) {
 	if err != nil {
 		return nil, err
 	}
+	dbCall.WithLabelValues("seat", "query").Inc()
 
 	var result []*Seat
 	for docs.Next() {
 		var doc Seat
 		if err := docs.ScanDoc(&doc); err != nil {
-			panic(err)
+			return nil, err
 		}
 		result = append(result, &doc)
 	}
 
 	if docs.Err() != nil {
-		panic(docs.Err())
+		return nil, err
 	}
 
 	return result, nil
@@ -182,18 +190,19 @@ func (m *Models) SeatGetAll() ([]*Seat, error) {
 	if err != nil {
 		return nil, err
 	}
+	dbCall.WithLabelValues("seat", "query").Inc()
 
 	var result []*Seat
 	for docs.Next() {
 		var doc Seat
 		if err := docs.ScanDoc(&doc); err != nil {
-			panic(err)
+			return nil, err
 		}
 		result = append(result, &doc)
 	}
 
 	if docs.Err() != nil {
-		panic(docs.Err())
+		return nil, err
 	}
 
 	return result, nil

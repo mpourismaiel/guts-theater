@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// type definition for document
 type Ticket struct {
 	ID      string   `json:"_id"`
 	Rev     string   `json:"_rev,omitempty"`
@@ -29,6 +30,7 @@ func (m *Models) ticketCreateModel() error {
 			},
 		},
 	})
+	dbCall.WithLabelValues("ticket", "migration").Inc()
 
 	return err
 }
@@ -51,6 +53,7 @@ func (m *Models) TicketSave(t *Ticket) error {
 	if err != nil {
 		return err
 	}
+	dbCall.WithLabelValues("ticket", "save").Inc()
 
 	t.ID = id
 	rev, err := m.db.Put(context.TODO(), t.ID, &t)
@@ -74,8 +77,9 @@ func (m *Models) TicketDelete(t *Ticket) error {
 
 	rev, err := m.db.Delete(context.TODO(), t.ID, t.Rev)
 	if err != nil {
-		panic(err)
+		return err
 	}
+	dbCall.WithLabelValues("ticket", "delete").Inc()
 
 	fields := []zapcore.Field{
 		zap.String("ticketId", t.ID),
@@ -93,18 +97,19 @@ func (m *Models) TicketGetAll() ([]*Ticket, error) {
 	if err != nil {
 		return nil, err
 	}
+	dbCall.WithLabelValues("ticket", "query").Inc()
 
 	var result []*Ticket
 	for docs.Next() {
 		var doc Ticket
 		if err := docs.ScanDoc(&doc); err != nil {
-			panic(err)
+			return nil, err
 		}
 		result = append(result, &doc)
 	}
 
 	if docs.Err() != nil {
-		panic(docs.Err())
+		return nil, docs.Err()
 	}
 
 	return result, nil
@@ -118,16 +123,17 @@ func (m *Models) TicketGetByGroupId(groupId string) (*Ticket, error) {
 	if err != nil {
 		return nil, err
 	}
+	dbCall.WithLabelValues("ticket", "query").Inc()
 
 	var doc Ticket
 	for docs.Next() {
 		if err := docs.ScanDoc(&doc); err != nil {
-			panic(err)
+			return nil, err
 		}
 	}
 
 	if docs.Err() != nil {
-		panic(docs.Err())
+		return nil, docs.Err()
 	}
 
 	return &doc, nil

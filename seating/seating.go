@@ -114,7 +114,7 @@ func (s *seating) seatGroups(section section, m models.Models) []*models.Ticket 
 	for _, group := range section.Groups {
 		t, err := m.TicketGetByGroupId(group.ID)
 		if err != nil {
-			panic(err)
+			s.logger.Fatal("could not load tickets")
 		}
 
 		if t.ID != "" {
