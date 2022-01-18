@@ -36,6 +36,7 @@ var (
 func registerPromVec() {
 	prometheus.MustRegister(HttpCall)
 	prometheus.MustRegister(HttpDuration)
+	prometheus.MustRegister(DbCall)
 }
 
 func Setup() {
