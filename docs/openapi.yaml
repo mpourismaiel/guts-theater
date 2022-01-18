@@ -1,0 +1,682 @@
+openapi: 3.0.1
+info:
+  title: GutsTheater
+  description: "API reference for Guts Theater"
+  contact:
+    name: "Mahdi Pourismaiel"
+    email: mpourismaiel@gmail.com
+  version: 1.0.0
+externalDocs:
+  description: Repository Home
+  url: https://github.com/mpourismaiel/guts-theater
+servers:
+  - url: http://localhost:4000
+tags:
+  - name: section
+    description: Section related endpoints
+  - name: row
+    description: Row related endpoints
+  - name: seat
+    description: Seat related endpoints
+  - name: group
+    description: Group related endpoints
+  - name: ticket
+    description: Ticket related endpoints
+  - name: trigger
+    description: Trigger seating algorithm
+  - name: general
+    description: General endpoints
+
+paths:
+  /healthz:
+    get:
+      tags:
+        - general
+      summary: Check the service's health status
+      description: Check the service's health status
+      operationId: healthz
+      responses:
+        200:
+          description: Successful operation
+          content: {}
+  /section:
+    get:
+      tags:
+        - section
+      summary: Get the list of all sections
+      description: Fetches a json array containing all sections
+      operationId: sectionsIndex
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                    _rev:
+                      type: string
+                    name:
+                      type: string
+                    elevation:
+                      type: number
+                    curved:
+                      type: boolean
+    post:
+      tags:
+        - section
+      summary: Create a new section
+      description: Creates a new section and return the result
+      operationId: sectionCreate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                curved:
+                  type: boolean
+                elevation:
+                  type: number
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  _rev:
+                    type: string
+                  name:
+                    type: string
+                  elevation:
+                    type: number
+                  curved:
+                    type: boolean
+
+        500:
+          description: Internal server error
+          content: {}
+  /section/{sectionName}:
+    put:
+      tags:
+        - section
+      summary: Updates a section
+      description: Updates a section and returns the result
+      operationId: sectionUpdate
+      parameters:
+        - in: path
+          name: sectionName
+          schema:
+            type: string
+          required: true
+          description: name of an already existing section
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                curved:
+                  type: boolean
+                elevation:
+                  type: number
+      responses:
+          200:
+            description: Successful operation
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                    _rev:
+                      type: string
+                    name:
+                      type: string
+                    elevation:
+                      type: number
+                    curved:
+                      type: boolean
+
+          500:
+            description: Internal server error
+            content: {}
+    delete:
+      tags:
+        - section
+      summary: Deletes a section
+      description: Deletes a section and returns the deleted section
+      operationId: sectionDelete
+      parameters:
+        - in: path
+          name: sectionName
+          schema:
+            type: string
+          required: true
+          description: name of an already existing section
+      responses:
+          200:
+            description: Successful operation
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                    _rev:
+                      type: string
+                    name:
+                      type: string
+                    elevation:
+                      type: number
+                    curved:
+                      type: boolean
+
+          500:
+            description: Internal server error
+            content: {}
+  /section/{sectionName}/rows:
+    get:
+      tags:
+        - row
+      summary: Get the list of all rows within a section
+      description: Fetches a json array containing all rows
+      operationId: rowsIndex
+      parameters:
+        - in: path
+          name: sectionName
+          schema:
+            type: string
+          required: true
+          description: name of an already existing section
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                    _rev:
+                      type: string
+                    name:
+                      type: string
+                    section:
+                      type: string
+  /section/{sectionName}/row:
+    post:
+      tags:
+        - row
+      summary: Create a row
+      description: Create a row and returns the result
+      operationId: rowUpdate
+      parameters:
+        - in: path
+          name: sectionName
+          schema:
+            type: string
+          required: true
+          description: name of an already existing section
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+          200:
+            description: Successful operation
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                    _rev:
+                      type: string
+                    name:
+                      type: string
+                    section:
+                      type: string
+
+          500:
+            description: Internal server error
+            content: {}
+  /section/{sectionName}/row/{rowName}:
+    delete:
+      tags:
+        - row
+      summary: Deletes a row
+      description: Deletes a row and returns the result
+      operationId: rowDelete
+      parameters:
+        - in: path
+          name: sectionName
+          schema:
+            type: string
+          required: true
+          description: name of an already existing section
+        - in: path
+          name: rowName
+          schema:
+            type: string
+          required: true
+          description: name of an already existing row
+      responses:
+          200:
+            description: Successful operation
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                    _rev:
+                      type: string
+                    name:
+                      type: string
+                    section:
+                      type: string
+          500:
+            description: Internal server error
+            content: {}
+  /section/{sectionName}/seats:
+    get:
+      tags:
+        - seat
+      summary: Get the list of all seats
+      description: Get the list of all seats and returns the result
+      operationId: seatsIndex
+      parameters:
+        - in: path
+          name: sectionName
+          schema:
+            type: string
+          required: true
+          description: name of an already existing section
+      responses:
+          200:
+            description: Successful operation
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                    _rev:
+                      type: string
+                    row:
+                      type: string
+                    section:
+                      type: string
+                    name:
+                      type: string
+                    rank:
+                      type: string
+                    broken:
+                      type: boolean
+                    aisle:
+                      type: boolean
+          500:
+            description: Internal server error
+            content: {}
+  /section/{sectionName}/row/{rowName}/seat:
+    post:
+      tags:
+        - seat
+      summary: Create a seat
+      description: Create a seat and returns the result
+      operationId: seatCreate
+      parameters:
+        - in: path
+          name: sectionName
+          schema:
+            type: string
+          required: true
+          description: name of an already existing section
+        - in: path
+          name: rowName
+          schema:
+            type: string
+          required: true
+          description: name of an already existing row
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  rank:
+                    type: string
+                  broken:
+                    type: boolean
+                  aisle:
+                    type: boolean
+      responses:
+          200:
+            description: Successful operation
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                      _rev:
+                        type: string
+                      name:
+                        type: string
+                      rank:
+                        type: string
+                      broken:
+                        type: boolean
+                      aisle:
+                        type: boolean
+          500:
+            description: Internal server error
+            content: {}
+  /section/{sectionName}/row/{rowName}/seat/{seatName}:
+    put:
+      tags:
+        - seat
+      summary: Update a seat
+      description: Update a seat and returns the result
+      operationId: seatUpdate
+      parameters:
+        - in: path
+          name: sectionName
+          schema:
+            type: string
+          required: true
+          description: name of an already existing section
+        - in: path
+          name: rowName
+          schema:
+            type: string
+          required: true
+          description: name of an already existing row
+        - in: path
+          name: seatName
+          schema:
+            type: string
+          required: true
+          description: name of an already existing seat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                rank:
+                  type: string
+                broken:
+                  type: boolean
+                aisle:
+                  type: boolean
+      responses:
+          200:
+            description: Successful operation
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                    _rev:
+                      type: string
+                    name:
+                      type: string
+                    rank:
+                      type: string
+                    broken:
+                      type: boolean
+                    aisle:
+                      type: boolean
+          500:
+            description: Internal server error
+            content: {}
+    delete:
+      tags:
+        - seat
+      summary: Delete a seat
+      description: Delete a seat and returns the result
+      operationId: seatDelete
+      parameters:
+        - in: path
+          name: sectionName
+          schema:
+            type: string
+          required: true
+          description: name of an already existing section
+        - in: path
+          name: rowName
+          schema:
+            type: string
+          required: true
+          description: name of an already existing row
+        - in: path
+          name: seatName
+          schema:
+            type: string
+          required: true
+          description: name of an already existing seat
+      responses:
+          200:
+            description: Successful operation
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                    _rev:
+                      type: string
+                    name:
+                      type: string
+                    rank:
+                      type: string
+                    broken:
+                      type: boolean
+                    aisle:
+                      type: boolean
+          500:
+            description: Internal server error
+            content: {}
+  /groups:
+    get:
+      tags:
+        - group
+      summary: Fetches all groups
+      description: Fetches all groups and returns the result
+      operationId: groupIndex
+      responses:
+          200:
+            description: Successful operation
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                    _rev:
+                      type: string
+                    aisle:
+                      type: boolean
+                    rank:
+                      type: string
+                    count:
+                      type: number
+                    section:
+                      type: string
+
+          500:
+            description: Internal server error
+            content: {}
+    post:
+      tags:
+        - group
+      summary: Create a group
+      description: Create a group and returns the result
+      operationId: groupCreate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                curved:
+                  type: boolean
+                elevation:
+                  type: number
+      responses:
+          200:
+            description: Successful operation
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                    _rev:
+                      type: string
+                    aisle:
+                      type: boolean
+                    rank:
+                      type: string
+                    count:
+                      type: number
+                    section:
+                      type: string
+
+          500:
+            description: Internal server error
+            content: {}
+  /ticket:
+    get:
+      tags:
+        - ticket
+      summary: Fetches all tickets
+      description: Fetches all tickets and returns the result
+      operationId: ticketIndex
+      responses:
+          200:
+            description: Successful operation
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                      _rev:
+                        type: string
+                      groupId:
+                        type: string
+                      seats:
+                        type: array
+                        items:
+                          type: string
+
+          500:
+            description: Internal server error
+            content: {}
+  /ticket/{groupId}:
+    get:
+      tags:
+        - ticket
+      summary: Get a ticket
+      description: Get a ticket and returns the result
+      operationId: ticketGet
+      parameters:
+        - in: path
+          name: groupId
+          schema:
+            type: string
+          required: true
+          description: id of an existing token
+      responses:
+          200:
+            description: Successful operation
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                    _rev:
+                      type: string
+                    aisle:
+                      type: boolean
+                    rank:
+                      type: string
+                    count:
+                      type: number
+                    section:
+                      type: string
+
+          500:
+            description: Internal server error
+            content: {}
+  /trigger-seating:
+    post:
+      tags:
+        - trigger
+      summary: Trigger seating algorithm
+      description: Triggers seating algorithm asynchronously
+      operationId: trigger
+      responses:
+          200:
+            description: Successful operation
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    ok:
+                      type: boolean
+
+          500:
+            description: Internal server error
+            content: {}
