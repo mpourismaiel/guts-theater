@@ -14,7 +14,7 @@ couchdb instance on port `5984` and build and run the project. For client access
 provided which is written in React.
 
 In order to ease the deployment process, a `docker-compose.yml` configuration
-has been provided which can be run using:
+has been provided in [guts-theater-combined](https://github.com/mpourismaiel/guts-theater-combines) which can be run using:
 
 ```
 docker-compose up --build
@@ -69,3 +69,41 @@ Get     /ticket/{groupId}
 
 Post    /trigger-seating
 ```
+
+## Environment variables
+
+- **ADDRESS**
+
+  type: string
+
+  default: empty string
+
+- **PORT**
+
+  type: string
+
+  default: 4000
+
+- **DB_HOST**
+
+  type: string
+
+  default: localhost
+
+- **DB_USER**
+
+  type: string
+
+  default: admin
+
+- **DB_PASSWORD**
+
+  type: string
+
+  default: password
+
+- **DB_NAME**
+
+  type: string
+
+  default: guts
