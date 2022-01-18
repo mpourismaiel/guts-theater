@@ -1,10 +1,15 @@
 package server
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
-	"sync"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -58,24 +63,41 @@ func (s *Server) Serve() error {
 		return fmt.Errorf("net.Listen failed on address %s: %v", s.server.Addr, err)
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(1)
+	serverCtx, serverStopCtx := context.WithCancel(context.Background())
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+
 	go func() {
-		if err = s.server.Serve(listener); err != nil {
-			fields := []zapcore.Field{
-				zap.String("address", s.server.Addr),
-				zap.String("error", err.Error()),
+		<-sig
+
+		shutdownCtx, _ := context.WithTimeout(serverCtx, 30*time.Second)
+		go func() {
+			<-shutdownCtx.Done()
+			if shutdownCtx.Err() == context.DeadlineExceeded {
+				s.logger.Fatal("graceful shutdown timed out... forcing exit.")
 			}
-			s.logger.Error("http.Server.Serve failed on address", fields...)
+			s.logger.Info("gracefully shutdown")
+		}()
+
+		err := s.server.Shutdown(shutdownCtx)
+		if err != nil {
+			log.Fatal(err)
 		}
-		wg.Done()
+		serverStopCtx()
 	}()
 
 	fields := []zapcore.Field{
 		zap.String("address", s.server.Addr),
 	}
 	s.logger.Info("Server running on", fields...)
-	wg.Wait()
+	if err = s.server.Serve(listener); err != nil && err != http.ErrServerClosed {
+		fields := []zapcore.Field{
+			zap.String("address", s.server.Addr),
+			zap.String("error", err.Error()),
+		}
+		s.logger.Error("http.Server.Serve failed on address", fields...)
+	}
+	<-serverCtx.Done()
 	return nil
 }
 

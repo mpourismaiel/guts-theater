@@ -23,8 +23,8 @@ func main() {
 	}
 
 	dbUser := os.Getenv("DB_USER")
-	if address == "" {
-		address = "admin"
+	if dbUser == "" {
+		dbUser = "admin"
 	}
 
 	dbPassword := os.Getenv("DB_PASSWORD")
