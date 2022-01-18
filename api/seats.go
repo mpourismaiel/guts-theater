@@ -31,6 +31,11 @@ func (a *ApiServer) fetchSeats() http.HandlerFunc {
 			return
 		}
 
+		if len(sections) == 0 {
+			a.renderStringAsJSON(rw, 200, "[]")
+			return
+		}
+
 		a.renderJSON(rw, 200, sections)
 	}
 }
@@ -75,6 +80,11 @@ func (a *ApiServer) createSeats() http.HandlerFunc {
 				return
 			}
 			result = append(result, &newSeat)
+		}
+
+		if len(result) == 0 {
+			a.renderStringAsJSON(rw, 200, "[]")
+			return
 		}
 
 		a.renderJSON(rw, 200, result)

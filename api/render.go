@@ -18,6 +18,12 @@ func (s *ApiServer) renderErrInternal(rw http.ResponseWriter, err error) {
 	s.renderJSON(rw, http.StatusInternalServerError, ErrResponse{Status: "internal error", Error: errString(err)})
 }
 
+func (s *ApiServer) renderStringAsJSON(rw http.ResponseWriter, code int, v string) {
+	rw.Header().Set("Content-Type", "application/json")
+	rw.WriteHeader(code)
+	_, _ = rw.Write([]byte(v))
+}
+
 func (s *ApiServer) renderString(rw http.ResponseWriter, code int, v string) {
 	rw.Header().Set("Content-Type", "plain/text")
 	rw.WriteHeader(code)

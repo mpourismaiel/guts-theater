@@ -23,7 +23,7 @@ func (a *ApiServer) fetchGroups() http.HandlerFunc {
 		}
 
 		if len(groups) == 0 {
-			a.renderString(rw, 200, "[]")
+			a.renderStringAsJSON(rw, 200, "[]")
 			return
 		}
 
