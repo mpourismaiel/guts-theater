@@ -1,5 +1,11 @@
 package seating
 
+/**
+* this package is responsible for assigning seats to customer groups.
+* can be called concurrently or synchronously but it's advised to create a
+* goroutine as this function has multiple loops and db calls.
+**/
+
 import (
 	"fmt"
 

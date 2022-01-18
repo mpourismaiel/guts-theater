@@ -28,6 +28,9 @@ type Server struct {
 	logger *zap.Logger
 }
 
+// creates new http server along with chi router, can be used to create multiple
+// servers and makes it possible to create microservices if required
+// also registers essential middlewares such as cleanpath, recoverer and prometheus calls
 func New(address string, port string, logger *zap.Logger) (*Server, error) {
 	r := chi.NewRouter()
 

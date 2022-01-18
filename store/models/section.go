@@ -18,6 +18,7 @@ type Section struct {
 	Curved    bool   `json:"curved"`
 }
 
+// create views for the model
 func (m *Models) sectionCreateModel() error {
 	_, err := m.db.Put(context.TODO(), "_design/section", map[string]interface{}{
 		"id": "_design/section",
@@ -32,6 +33,7 @@ func (m *Models) sectionCreateModel() error {
 	return err
 }
 
+// generate id with prefix to indicate type and possible relations
 func sectionCreateId(s *Section) string {
 	return fmt.Sprintf("section:%s", s.Name)
 }

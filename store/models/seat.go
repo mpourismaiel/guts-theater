@@ -21,6 +21,7 @@ type Seat struct {
 	Aisle   bool   `json:"aisle"`
 }
 
+// create views for the model
 func (m *Models) seatCreateModel() error {
 	_, err := m.db.Put(context.TODO(), "_design/seat", map[string]interface{}{
 		"id": "_design/seat",
@@ -41,6 +42,7 @@ func (m *Models) seatCreateModel() error {
 	return err
 }
 
+// generate id with prefix to indicate type and possible relations
 func seatCreateId(s *Seat) string {
 	return fmt.Sprintf("section:%s:row:%s:seat:%s", s.Section, s.Row, s.Name)
 }

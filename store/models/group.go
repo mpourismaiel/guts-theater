@@ -20,6 +20,7 @@ type Group struct {
 	Section string `json:"section"`
 }
 
+// create views for the model
 func (m *Models) groupCreateModel() error {
 	_, err := m.db.Put(context.TODO(), "_design/group", map[string]interface{}{
 		"id": "_design/group",
@@ -37,6 +38,7 @@ func (m *Models) groupCreateModel() error {
 	return err
 }
 
+// generate id with prefix to indicate type and possible relations
 func groupCreateId() (string, error) {
 	id, err := uuid.NewRandom()
 	if err != nil {

@@ -16,6 +16,9 @@ type ApiServer struct {
 	logger *zap.Logger
 }
 
+// creates a new server and store and registers routes. such a package can be created
+// multiple times for multiservice purposes (some code changes required but the
+// code has been written with microservice compatibility in mind)
 func New(address string, port string, dbHost string, dbUser string, dbPassword string, logger *zap.Logger) error {
 	s, err := server.New(address, port, logger)
 	if err != nil {
@@ -34,6 +37,8 @@ func New(address string, port string, dbHost string, dbUser string, dbPassword s
 	}
 
 	api.server.Router().Route("/", func(r chi.Router) {
+		// routes are created inside functions to allow path specific middlewares and
+		// easier function definitions for handlers
 		r.Get("/seats", api.fetchSeats())
 		r.Get("/seats/{section}", api.fetchSeatsBySection())
 

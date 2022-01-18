@@ -18,6 +18,7 @@ type Ticket struct {
 	Seats   []string `json:"seats"`
 }
 
+// create views for the model
 func (m *Models) ticketCreateModel() error {
 	_, err := m.db.Put(context.TODO(), "_design/ticket", map[string]interface{}{
 		"id": "_design/ticket",
@@ -35,6 +36,7 @@ func (m *Models) ticketCreateModel() error {
 	return err
 }
 
+// generate id with prefix to indicate type and possible relations
 func ticketCreateId() (string, error) {
 	id, err := uuid.NewRandom()
 	if err != nil {

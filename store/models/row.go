@@ -17,6 +17,7 @@ type Row struct {
 	Section string `json:"section"`
 }
 
+// create views for the model
 func (m *Models) rowCreateModel() error {
 	_, err := m.db.Put(context.TODO(), "_design/row", map[string]interface{}{
 		"id": "_design/row",
@@ -34,6 +35,7 @@ func (m *Models) rowCreateModel() error {
 	return err
 }
 
+// generate id with prefix to indicate type and possible relations
 func rowCreateId(r *Row) string {
 	return fmt.Sprintf("section:%s:row:%s", r.Section, r.Name)
 }

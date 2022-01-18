@@ -16,6 +16,7 @@ type Orm struct {
 	logger *zap.Logger
 }
 
+// connects to database and provides access to models package
 func New(dbHost string, dbName string, dbUser string, dbPassword string, logger *zap.Logger) (*Orm, error) {
 	if dbName == "" {
 		dbName = "guts"
@@ -30,14 +31,6 @@ func New(dbHost string, dbName string, dbUser string, dbPassword string, logger 
 	client.CreateDB(context.TODO(), dbName)
 	db := client.DB(context.TODO(), dbName)
 	logger.Info("Database connection established")
-
-	_, err = db.Query(context.TODO(), "_design/result", "_view/result", kivik.Options{
-		"include_docs": true,
-	})
-	if err != nil {
-		logger.Info("Seeding data")
-		// TODO: seed data
-	}
 
 	m := models.New(db, logger)
 

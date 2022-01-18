@@ -12,6 +12,7 @@ type Models struct {
 	logger *zap.Logger
 }
 
+// prometheus variables
 var (
 	dbCall = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name:        "guts_theater_db_call_total",
@@ -20,6 +21,9 @@ var (
 	}, []string{"model", "action"})
 )
 
+// create a models object which contains all types and accessor/modifier methods
+// for different documents, also registers prometheus variables which are later
+// called when accessing db
 func New(db *kivik.DB, logger *zap.Logger) *Models {
 	models := Models{
 		db:     db,
@@ -27,6 +31,7 @@ func New(db *kivik.DB, logger *zap.Logger) *Models {
 	}
 	prometheus.MustRegister(dbCall)
 
+	// create views and any other possible migrations
 	models.sectionCreateModel()
 	models.rowCreateModel()
 	models.seatCreateModel()
