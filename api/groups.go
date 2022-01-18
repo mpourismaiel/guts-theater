@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"mpourismaiel.dev/guts/store/models"
+	"github.com/mpourismaiel/guts-theater/store/models"
 )
 
 type createGroupRequest struct {

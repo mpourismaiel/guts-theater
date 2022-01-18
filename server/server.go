@@ -11,7 +11,6 @@ import (
 	"syscall"
 	"time"
 
-	chiprometheus "github.com/766b/chi-prometheus"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -30,13 +29,11 @@ type Server struct {
 
 func New(address string, port string, logger *zap.Logger) (*Server, error) {
 	r := chi.NewRouter()
-	prometheus := chiprometheus.NewPatternMiddleware("server")
 
 	r.Use(chizap.New(logger, &chizap.Opts{
 		WithReferer:   true,
 		WithUserAgent: true,
 	}))
-	r.Use(prometheus)
 	r.Use(middleware.CleanPath)
 	r.Use(middleware.Recoverer)
 	r.Use(cors.Handler(cors.Options{

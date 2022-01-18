@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"mpourismaiel.dev/guts/seating"
+	"github.com/mpourismaiel/guts-theater/seating"
 )
 
 func (a *ApiServer) triggerSeating() http.HandlerFunc {

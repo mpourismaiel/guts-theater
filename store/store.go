@@ -6,8 +6,8 @@ import (
 
 	_ "github.com/go-kivik/couchdb/v3"
 	kivik "github.com/go-kivik/kivik/v3"
+	"github.com/mpourismaiel/guts-theater/store/models"
 	"go.uber.org/zap"
-	"mpourismaiel.dev/guts/store/models"
 )
 
 type Orm struct {
@@ -16,7 +16,7 @@ type Orm struct {
 	logger *zap.Logger
 }
 
-func New(dbName string, dbUser string, dbPassword string, logger *zap.Logger) (*Orm, error) {
+func New(dbHost string, dbName string, dbUser string, dbPassword string, logger *zap.Logger) (*Orm, error) {
 	if dbName == "" {
 		dbName = "guts"
 	}

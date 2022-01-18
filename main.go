@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
+	"github.com/mpourismaiel/guts-theater/api"
 	"go.uber.org/zap"
-	"mpourismaiel.dev/guts/api"
 )
 
 func main() {
@@ -19,7 +19,12 @@ func main() {
 
 	address := os.Getenv("ADDRESS")
 	if address == "" {
-		address = "0.0.0.0"
+		address = ""
+	}
+
+	dbHost := os.Getenv("DB_HOST")
+	if dbHost == "" {
+		dbHost = "admin"
 	}
 
 	dbUser := os.Getenv("DB_USER")
@@ -32,7 +37,7 @@ func main() {
 		dbPassword = "password"
 	}
 
-	if err := api.New(address, port, dbUser, dbPassword, logger); err != nil {
+	if err := api.New(address, port, dbHost, dbUser, dbPassword, logger); err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}

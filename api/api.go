@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/mpourismaiel/guts-theater/server"
+	"github.com/mpourismaiel/guts-theater/store"
 	"go.uber.org/zap"
-	"mpourismaiel.dev/guts/server"
-	"mpourismaiel.dev/guts/store"
 )
 
 type ApiServer struct {
@@ -16,13 +16,13 @@ type ApiServer struct {
 	logger *zap.Logger
 }
 
-func New(address string, port string, dbUser string, dbPassword string, logger *zap.Logger) error {
+func New(address string, port string, dbHost string, dbUser string, dbPassword string, logger *zap.Logger) error {
 	s, err := server.New(address, port, logger)
 	if err != nil {
 		return fmt.Errorf("failed to create server for API: %v", err)
 	}
 
-	o, err := store.New("guts", dbUser, dbPassword, logger)
+	o, err := store.New(dbHost, "guts", dbUser, dbPassword, logger)
 	if err != nil {
 		return err
 	}

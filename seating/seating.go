@@ -3,9 +3,9 @@ package seating
 import (
 	"fmt"
 
+	"github.com/mpourismaiel/guts-theater/store/models"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"mpourismaiel.dev/guts/store/models"
 )
 
 type seating struct {

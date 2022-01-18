@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"mpourismaiel.dev/guts/store/models"
+	"github.com/mpourismaiel/guts-theater/store/models"
 )
 
 type createSectionRequest struct {
