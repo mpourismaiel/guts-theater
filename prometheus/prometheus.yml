@@ -1,8 +1,11 @@
 global:
-  scrape_interval: 15s
+  scrape_interval: 1m
 
 scrape_configs:
   - job_name: "prometheus"
-    scrape_interval: 5s
+    scrape_interval: 30s
+    tls_config:
+      insecure_skip_verify: true
+    metrics_path: '/metrics'
     static_configs:
-      - targets: ["localhost:9090"]
+      - targets: ["guts-theater:4000"]
