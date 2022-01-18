@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/middleware"
+	"github.com/mpourismaiel/guts-theater/prometheus"
 )
 
 func patternHandler(next http.Handler) http.Handler {
@@ -13,8 +14,8 @@ func patternHandler(next http.Handler) http.Handler {
 		ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
 		next.ServeHTTP(ww, r)
 
-		httpCall.WithLabelValues(http.StatusText(ww.Status()), r.Method, r.URL.RawPath).Inc()
-		httpDuration.WithLabelValues(http.StatusText(ww.Status()), r.Method, r.URL.RawPath).Observe(float64(time.Since(start).Nanoseconds()) / 1000000)
+		prometheus.HttpCall.WithLabelValues(http.StatusText(ww.Status()), r.Method, r.URL.RawPath).Inc()
+		prometheus.HttpDuration.WithLabelValues(http.StatusText(ww.Status()), r.Method, r.URL.RawPath).Observe(float64(time.Since(start).Nanoseconds()) / 1000000)
 	}
 	return http.HandlerFunc(fn)
 }

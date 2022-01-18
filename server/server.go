@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"os"
@@ -14,6 +13,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/mpourismaiel/guts-theater/config"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -31,7 +31,7 @@ type Server struct {
 // creates new http server along with chi router, can be used to create multiple
 // servers and makes it possible to create microservices if required
 // also registers essential middlewares such as cleanpath, recoverer and prometheus calls
-func New(address string, port string, logger *zap.Logger) (*Server, error) {
+func New(conf *config.Config, logger *zap.Logger) (*Server, error) {
 	r := chi.NewRouter()
 
 	r.Use(chizap.New(logger, &chizap.Opts{
@@ -53,8 +53,8 @@ func New(address string, port string, logger *zap.Logger) (*Server, error) {
 
 	return &Server{
 		router: r,
-		addr:   address,
-		port:   port,
+		addr:   conf.Address,
+		port:   conf.Port,
 		logger: logger,
 	}, nil
 }
@@ -73,22 +73,22 @@ func (s *Server) Serve() error {
 	serverCtx, serverStopCtx := context.WithCancel(context.Background())
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-
 	go func() {
 		<-sig
 
-		shutdownCtx, _ := context.WithTimeout(serverCtx, 30*time.Second)
+		shutdownCtx, cancel := context.WithTimeout(serverCtx, 30*time.Second)
 		go func() {
 			<-shutdownCtx.Done()
 			if shutdownCtx.Err() == context.DeadlineExceeded {
 				s.logger.Fatal("graceful shutdown timed out... forcing exit.")
 			}
 			s.logger.Info("gracefully shutdown")
+			cancel()
 		}()
 
 		err := s.server.Shutdown(shutdownCtx)
 		if err != nil {
-			log.Fatal(err)
+			s.logger.Fatal(err.Error())
 		}
 		serverStopCtx()
 	}()

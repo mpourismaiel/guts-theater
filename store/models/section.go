@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	kivik "github.com/go-kivik/kivik/v3"
+	"github.com/mpourismaiel/guts-theater/prometheus"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -28,7 +29,7 @@ func (m *Models) sectionCreateModel() error {
 			},
 		},
 	})
-	dbCall.WithLabelValues("section", "migration").Inc()
+	prometheus.DbCall.WithLabelValues("section", "migration").Inc()
 
 	return err
 }
@@ -48,7 +49,7 @@ func (m *Models) SectionSave(s *Section) error {
 	if err != nil {
 		return err
 	}
-	dbCall.WithLabelValues("section", "save").Inc()
+	prometheus.DbCall.WithLabelValues("section", "save").Inc()
 
 	fields := []zapcore.Field{
 		zap.String("sectionName", s.Name),
@@ -69,7 +70,7 @@ func (m *Models) SectionUpdate(s *Section) error {
 	if err != nil {
 		return err
 	}
-	dbCall.WithLabelValues("section", "update").Inc()
+	prometheus.DbCall.WithLabelValues("section", "update").Inc()
 
 	fields := []zapcore.Field{
 		zap.String("sectionName", s.Name),
@@ -89,7 +90,7 @@ func (m *Models) SectionDelete(s *Section) error {
 	if err != nil {
 		return err
 	}
-	dbCall.WithLabelValues("section", "delete").Inc()
+	prometheus.DbCall.WithLabelValues("section", "delete").Inc()
 
 	fields := []zapcore.Field{
 		zap.String("sectionName", s.Name),
@@ -107,7 +108,7 @@ func (m *Models) SectionGetAll() ([]*Section, error) {
 	if err != nil {
 		return nil, err
 	}
-	dbCall.WithLabelValues("section", "query").Inc()
+	prometheus.DbCall.WithLabelValues("section", "query").Inc()
 
 	var result []*Section
 	for docs.Next() {
@@ -133,7 +134,7 @@ func (m *Models) SectionGetByName(name string) (*Section, error) {
 	if err != nil {
 		return nil, err
 	}
-	dbCall.WithLabelValues("section", "query").Inc()
+	prometheus.DbCall.WithLabelValues("section", "query").Inc()
 
 	var doc Section
 	for docs.Next() {

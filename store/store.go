@@ -6,6 +6,7 @@ import (
 
 	_ "github.com/go-kivik/couchdb/v3"
 	kivik "github.com/go-kivik/kivik/v3"
+	"github.com/mpourismaiel/guts-theater/config"
 	"github.com/mpourismaiel/guts-theater/store/models"
 	"go.uber.org/zap"
 )
@@ -17,19 +18,15 @@ type Orm struct {
 }
 
 // connects to database and provides access to models package
-func New(dbHost string, dbName string, dbUser string, dbPassword string, logger *zap.Logger) (*Orm, error) {
-	if dbName == "" {
-		dbName = "guts"
-	}
-
+func New(conf *config.Config, logger *zap.Logger) (*Orm, error) {
 	logger.Info("Connect to database")
-	client, err := kivik.New("couch", fmt.Sprintf("http://%s:%s@%s:5984/", dbUser, dbPassword, dbHost))
+	client, err := kivik.New("couch", fmt.Sprintf("http://%s:%s@%s:5984/", conf.DbUser, conf.DbPassword, conf.DbHost))
 	if err != nil {
 		return nil, err
 	}
 
-	client.CreateDB(context.TODO(), dbName)
-	db := client.DB(context.TODO(), dbName)
+	client.CreateDB(context.TODO(), conf.DbName)
+	db := client.DB(context.TODO(), conf.DbName)
 	logger.Info("Database connection established")
 
 	m := models.New(db, logger)

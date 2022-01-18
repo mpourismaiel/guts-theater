@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-kivik/kivik/v3"
 	"github.com/google/uuid"
+	"github.com/mpourismaiel/guts-theater/prometheus"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -31,7 +32,7 @@ func (m *Models) ticketCreateModel() error {
 			},
 		},
 	})
-	dbCall.WithLabelValues("ticket", "migration").Inc()
+	prometheus.DbCall.WithLabelValues("ticket", "migration").Inc()
 
 	return err
 }
@@ -55,7 +56,7 @@ func (m *Models) TicketSave(t *Ticket) error {
 	if err != nil {
 		return err
 	}
-	dbCall.WithLabelValues("ticket", "save").Inc()
+	prometheus.DbCall.WithLabelValues("ticket", "save").Inc()
 
 	t.ID = id
 	rev, err := m.db.Put(context.TODO(), t.ID, &t)
@@ -81,7 +82,7 @@ func (m *Models) TicketDelete(t *Ticket) error {
 	if err != nil {
 		return err
 	}
-	dbCall.WithLabelValues("ticket", "delete").Inc()
+	prometheus.DbCall.WithLabelValues("ticket", "delete").Inc()
 
 	fields := []zapcore.Field{
 		zap.String("ticketId", t.ID),
@@ -99,7 +100,7 @@ func (m *Models) TicketGetAll() ([]*Ticket, error) {
 	if err != nil {
 		return nil, err
 	}
-	dbCall.WithLabelValues("ticket", "query").Inc()
+	prometheus.DbCall.WithLabelValues("ticket", "query").Inc()
 
 	var result []*Ticket
 	for docs.Next() {
@@ -125,7 +126,7 @@ func (m *Models) TicketGetByGroupId(groupId string) (*Ticket, error) {
 	if err != nil {
 		return nil, err
 	}
-	dbCall.WithLabelValues("ticket", "query").Inc()
+	prometheus.DbCall.WithLabelValues("ticket", "query").Inc()
 
 	var doc Ticket
 	for docs.Next() {

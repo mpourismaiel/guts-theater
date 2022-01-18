@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	kivik "github.com/go-kivik/kivik/v3"
+	"github.com/mpourismaiel/guts-theater/prometheus"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -37,7 +38,7 @@ func (m *Models) seatCreateModel() error {
 			},
 		},
 	})
-	dbCall.WithLabelValues("seat", "migration").Inc()
+	prometheus.DbCall.WithLabelValues("seat", "migration").Inc()
 
 	return err
 }
@@ -57,7 +58,7 @@ func (m *Models) SeatSave(s *Seat) error {
 	if err != nil {
 		return err
 	}
-	dbCall.WithLabelValues("seat", "save").Inc()
+	prometheus.DbCall.WithLabelValues("seat", "save").Inc()
 
 	fields := []zapcore.Field{
 		zap.String("seatName", s.Name),
@@ -78,7 +79,7 @@ func (m *Models) SeatUpdate(s *Seat) error {
 	if err != nil {
 		return err
 	}
-	dbCall.WithLabelValues("seat", "update").Inc()
+	prometheus.DbCall.WithLabelValues("seat", "update").Inc()
 
 	fields := []zapcore.Field{
 		zap.String("seatName", s.Name),
@@ -98,7 +99,7 @@ func (m *Models) SeatDelete(s *Seat) error {
 	if err != nil {
 		return err
 	}
-	dbCall.WithLabelValues("seat", "delete").Inc()
+	prometheus.DbCall.WithLabelValues("seat", "delete").Inc()
 
 	fields := []zapcore.Field{
 		zap.String("seatName", s.Name),
@@ -117,7 +118,7 @@ func (m *Models) SeatGetByName(sectionName string, rowName string, seatName stri
 	if err != nil {
 		return nil, err
 	}
-	dbCall.WithLabelValues("seat", "query").Inc()
+	prometheus.DbCall.WithLabelValues("seat", "query").Inc()
 
 	var doc Seat
 	for docs.Next() {
@@ -141,7 +142,7 @@ func (m *Models) SeatGetByRow(sectionName string, rowName string) ([]*Seat, erro
 	if err != nil {
 		return nil, err
 	}
-	dbCall.WithLabelValues("seat", "query").Inc()
+	prometheus.DbCall.WithLabelValues("seat", "query").Inc()
 
 	var result []*Seat
 	for docs.Next() {
@@ -167,7 +168,7 @@ func (m *Models) SeatGetBySection(sectionName string) ([]*Seat, error) {
 	if err != nil {
 		return nil, err
 	}
-	dbCall.WithLabelValues("seat", "query").Inc()
+	prometheus.DbCall.WithLabelValues("seat", "query").Inc()
 
 	var result []*Seat
 	for docs.Next() {
@@ -192,7 +193,7 @@ func (m *Models) SeatGetAll() ([]*Seat, error) {
 	if err != nil {
 		return nil, err
 	}
-	dbCall.WithLabelValues("seat", "query").Inc()
+	prometheus.DbCall.WithLabelValues("seat", "query").Inc()
 
 	var result []*Seat
 	for docs.Next() {

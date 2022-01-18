@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/mpourismaiel/guts-theater/config"
 	"github.com/mpourismaiel/guts-theater/server"
 	"github.com/mpourismaiel/guts-theater/store"
 	"go.uber.org/zap"
@@ -19,13 +20,13 @@ type ApiServer struct {
 // creates a new server and store and registers routes. such a package can be created
 // multiple times for multiservice purposes (some code changes required but the
 // code has been written with microservice compatibility in mind)
-func New(address string, port string, dbHost string, dbUser string, dbPassword string, logger *zap.Logger) (*ApiServer, error) {
-	s, err := server.New(address, port, logger)
+func New(conf *config.Config, logger *zap.Logger) (*ApiServer, error) {
+	s, err := server.New(conf, logger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create server for API: %v", err)
 	}
 
-	o, err := store.New(dbHost, "guts", dbUser, dbPassword, logger)
+	o, err := store.New(conf, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -62,14 +63,19 @@ func New(address string, port string, dbHost string, dbUser string, dbPassword s
 		r.Get("/ticket", api.fetchTickets())
 		r.Get("/ticket/{groupId}", api.fetchGroupTicket())
 
-		r.Post("/trigger-seating", api.triggerSeating())
+		r.Post("/trigger-seating", api.triggerSeating(false))
+		r.Post("/trigger-seating/sync", api.triggerSeating(true))
 
 		r.Get("/healthz", func(rw http.ResponseWriter, r *http.Request) {
-			rw.Write([]byte("{\"ok\": true}"))
+			api.renderJSON(rw, 200, map[string]bool{"ok": true})
 		})
 	})
 
-	api.server.Serve()
+	if conf.TestMode {
+		go api.server.Serve()
+	} else {
+		api.server.Serve()
+	}
 
 	return &api, nil
 }

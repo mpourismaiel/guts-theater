@@ -4,6 +4,8 @@ import (
 	"os"
 
 	"github.com/mpourismaiel/guts-theater/api"
+	"github.com/mpourismaiel/guts-theater/config"
+	"github.com/mpourismaiel/guts-theater/prometheus"
 	"go.uber.org/zap"
 )
 
@@ -12,32 +14,11 @@ func main() {
 	logger.Info("Starting project...")
 	defer logger.Sync()
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "4000"
-	}
+	prometheus.Setup()
 
-	address := os.Getenv("ADDRESS")
-	if address == "" {
-		address = ""
-	}
+	conf := config.Setup()
 
-	dbHost := os.Getenv("DB_HOST")
-	if dbHost == "" {
-		dbHost = "localhost"
-	}
-
-	dbUser := os.Getenv("DB_USER")
-	if dbUser == "" {
-		dbUser = "admin"
-	}
-
-	dbPassword := os.Getenv("DB_PASSWORD")
-	if dbPassword == "" {
-		dbPassword = "password"
-	}
-
-	if _, err := api.New(address, port, dbHost, dbUser, dbPassword, logger); err != nil {
+	if _, err := api.New(conf, logger); err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}

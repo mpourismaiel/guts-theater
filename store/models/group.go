@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-kivik/kivik/v3"
 	"github.com/google/uuid"
+	"github.com/mpourismaiel/guts-theater/prometheus"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -33,7 +34,7 @@ func (m *Models) groupCreateModel() error {
 			},
 		},
 	})
-	dbCall.WithLabelValues("group", "migration").Inc()
+	prometheus.DbCall.WithLabelValues("group", "migration").Inc()
 
 	return err
 }
@@ -57,7 +58,7 @@ func (m *Models) GroupSave(g *Group) error {
 	if err != nil {
 		return err
 	}
-	dbCall.WithLabelValues("group", "save").Inc()
+	prometheus.DbCall.WithLabelValues("group", "save").Inc()
 
 	g.ID = id
 	rev, err := m.db.Put(context.TODO(), g.ID, &g)
@@ -81,7 +82,7 @@ func (m *Models) GroupGetAll() ([]*Group, error) {
 	if err != nil {
 		return nil, err
 	}
-	dbCall.WithLabelValues("group", "query").Inc()
+	prometheus.DbCall.WithLabelValues("group", "query").Inc()
 
 	var result []*Group
 	for docs.Next() {
@@ -107,7 +108,7 @@ func (m *Models) GroupGetBySection(sectionName string) ([]*Group, error) {
 	if err != nil {
 		return nil, err
 	}
-	dbCall.WithLabelValues("group", "query").Inc()
+	prometheus.DbCall.WithLabelValues("group", "query").Inc()
 
 	var result []*Group
 	for docs.Next() {
@@ -133,7 +134,7 @@ func (m *Models) GroupGetById(groupId string) (*Group, error) {
 	if err != nil {
 		return nil, err
 	}
-	dbCall.WithLabelValues("group", "query").Inc()
+	prometheus.DbCall.WithLabelValues("group", "query").Inc()
 
 	var doc Group
 	for docs.Next() {
