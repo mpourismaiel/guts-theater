@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -12,7 +11,7 @@ func (a *ApiServer) fetchTickets() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		tickets, err := a.store.Models.TicketGetAll()
 		if err != nil {
-			rw.Write([]byte(err.Error()))
+			a.renderErrInternal(rw, err)
 			return
 		}
 
@@ -23,12 +22,7 @@ func (a *ApiServer) fetchTickets() http.HandlerFunc {
 			}
 		}
 
-		res, err := json.Marshal(groupsBySeats)
-		if err != nil {
-			rw.Write([]byte(err.Error()))
-			return
-		}
-		rw.Write(res)
+		a.renderJSON(rw, 200, groupsBySeats)
 	}
 }
 
@@ -36,15 +30,10 @@ func (a *ApiServer) fetchGroupTicket() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		group, err := a.store.Models.TicketGetByGroupId(chi.URLParam(r, "groupId"))
 		if err != nil {
-			rw.Write([]byte(err.Error()))
+			a.renderErrInternal(rw, err)
 			return
 		}
 
-		res, err := json.Marshal(group)
-		if err != nil {
-			rw.Write([]byte(err.Error()))
-			return
-		}
-		rw.Write(res)
+		a.renderJSON(rw, 200, group)
 	}
 }

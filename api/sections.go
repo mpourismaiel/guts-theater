@@ -23,16 +23,11 @@ func (a *ApiServer) fetchSections() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		sections, err := a.store.Models.SectionGetAll()
 		if err != nil {
-			rw.Write([]byte(err.Error()))
+			a.renderErrInternal(rw, err)
 			return
 		}
 
-		res, err := json.Marshal(sections)
-		if err != nil {
-			rw.Write([]byte(err.Error()))
-			return
-		}
-		rw.Write(res)
+		a.renderJSON(rw, 200, sections)
 	}
 }
 
@@ -41,7 +36,7 @@ func (a *ApiServer) createSection() http.HandlerFunc {
 		var s createSectionRequest
 		err := json.NewDecoder(r.Body).Decode(&s)
 		if err != nil {
-			rw.Write([]byte(err.Error()))
+			a.renderErrInternal(rw, err)
 			return
 		}
 
@@ -51,16 +46,11 @@ func (a *ApiServer) createSection() http.HandlerFunc {
 		}
 		err = a.store.Models.SectionSave(&section)
 		if err != nil {
-			rw.Write([]byte(err.Error()))
+			a.renderErrInternal(rw, err)
 			return
 		}
 
-		res, err := json.Marshal(section)
-		if err != nil {
-			rw.Write([]byte(err.Error()))
-			return
-		}
-		rw.Write(res)
+		a.renderJSON(rw, 200, section)
 	}
 }
 
@@ -69,13 +59,13 @@ func (a *ApiServer) updateSection() http.HandlerFunc {
 		var s updateSectionRequest
 		err := json.NewDecoder(r.Body).Decode(&s)
 		if err != nil {
-			rw.Write([]byte(err.Error()))
+			a.renderErrInternal(rw, err)
 			return
 		}
 
 		section, err := a.store.Models.SectionGetByName(chi.URLParam(r, "section"))
 		if err != nil {
-			rw.Write([]byte(err.Error()))
+			a.renderErrInternal(rw, err)
 			return
 		}
 
@@ -83,16 +73,11 @@ func (a *ApiServer) updateSection() http.HandlerFunc {
 		section.Elevation = s.Elevation
 		err = a.store.Models.SectionUpdate(section)
 		if err != nil {
-			rw.Write([]byte(err.Error()))
+			a.renderErrInternal(rw, err)
 			return
 		}
 
-		res, err := json.Marshal(section)
-		if err != nil {
-			rw.Write([]byte(err.Error()))
-			return
-		}
-		rw.Write(res)
+		a.renderJSON(rw, 200, section)
 	}
 }
 
@@ -100,21 +85,16 @@ func (a *ApiServer) deleteSection() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		section, err := a.store.Models.SectionGetByName(chi.URLParam(r, "section"))
 		if err != nil {
-			rw.Write([]byte(err.Error()))
+			a.renderErrInternal(rw, err)
 			return
 		}
 
 		err = a.store.Models.SectionDelete(section)
 		if err != nil {
-			rw.Write([]byte(err.Error()))
+			a.renderErrInternal(rw, err)
 			return
 		}
 
-		res, err := json.Marshal(section)
-		if err != nil {
-			rw.Write([]byte(err.Error()))
-			return
-		}
-		rw.Write(res)
+		a.renderJSON(rw, 200, section)
 	}
 }

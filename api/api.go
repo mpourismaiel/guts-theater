@@ -59,8 +59,8 @@ func New(address string, port string, dbUser string, dbPassword string, logger *
 
 		r.Post("/trigger-seating", api.triggerSeating())
 
-		r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte("{\"ok\": true}"))
+		r.Get("/healthz", func(rw http.ResponseWriter, r *http.Request) {
+			rw.Write([]byte("{\"ok\": true}"))
 		})
 	})
 

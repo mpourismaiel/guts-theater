@@ -18,21 +18,16 @@ func (a *ApiServer) fetchGroups() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		groups, err := a.store.Models.GroupGetAll()
 		if err != nil {
-			rw.Write([]byte(err.Error()))
+			a.renderErrInternal(rw, err)
 			return
 		}
 
 		if len(groups) == 0 {
-			rw.Write([]byte("[]"))
+			a.renderString(rw, 200, "[]")
 			return
 		}
 
-		res, err := json.Marshal(groups)
-		if err != nil {
-			rw.Write([]byte(err.Error()))
-			return
-		}
-		rw.Write(res)
+		a.renderJSON(rw, 200, groups)
 	}
 }
 
@@ -41,7 +36,7 @@ func (a *ApiServer) createGroup() http.HandlerFunc {
 		var group createGroupRequest
 		err := json.NewDecoder(r.Body).Decode(&group)
 		if err != nil {
-			rw.Write([]byte(err.Error()))
+			a.renderErrInternal(rw, err)
 			return
 		}
 
@@ -53,15 +48,10 @@ func (a *ApiServer) createGroup() http.HandlerFunc {
 		}
 		err = a.store.Models.GroupSave(&newGroup)
 		if err != nil {
-			rw.Write([]byte(err.Error()))
+			a.renderErrInternal(rw, err)
 			return
 		}
 
-		res, err := json.Marshal(newGroup)
-		if err != nil {
-			rw.Write([]byte(err.Error()))
-			return
-		}
-		rw.Write(res)
+		a.renderJSON(rw, 200, newGroup)
 	}
 }

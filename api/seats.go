@@ -27,12 +27,11 @@ func (a *ApiServer) fetchSeats() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		sections, err := seating.GetSections(*a.store.Models, a.logger)
 		if err != nil {
-			rw.Write([]byte(err.Error()))
+			a.renderErrInternal(rw, err)
 			return
 		}
 
-		res, _ := json.Marshal(sections)
-		rw.Write(res)
+		a.renderJSON(rw, 200, sections)
 	}
 }
 
@@ -40,12 +39,11 @@ func (a *ApiServer) fetchSeatsBySection() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		seats, err := a.store.Models.SeatGetBySection(chi.URLParam(r, "section"))
 		if err != nil {
-			rw.Write([]byte(err.Error()))
+			a.renderErrInternal(rw, err)
 			return
 		}
 
-		res, _ := json.Marshal(seats)
-		rw.Write(res)
+		a.renderJSON(rw, 200, seats)
 	}
 }
 
@@ -54,7 +52,7 @@ func (a *ApiServer) createSeats() http.HandlerFunc {
 		var s []createSeatRequest
 		err := json.NewDecoder(r.Body).Decode(&s)
 		if err != nil {
-			rw.Write([]byte(err.Error()))
+			a.renderErrInternal(rw, err)
 			return
 		}
 
@@ -73,18 +71,13 @@ func (a *ApiServer) createSeats() http.HandlerFunc {
 			}
 			err = a.store.Models.SeatSave(&newSeat)
 			if err != nil {
-				rw.Write([]byte(err.Error()))
+				a.renderErrInternal(rw, err)
 				return
 			}
 			result = append(result, &newSeat)
 		}
 
-		res, err := json.Marshal(result)
-		if err != nil {
-			rw.Write([]byte(err.Error()))
-			return
-		}
-		rw.Write(res)
+		a.renderJSON(rw, 200, result)
 	}
 }
 
@@ -93,13 +86,13 @@ func (a *ApiServer) updateSeat() http.HandlerFunc {
 		var s updateSeatRequest
 		err := json.NewDecoder(r.Body).Decode(&s)
 		if err != nil {
-			rw.Write([]byte(err.Error()))
+			a.renderErrInternal(rw, err)
 			return
 		}
 
 		seat, err := a.store.Models.SeatGetByName(chi.URLParam(r, "section"), chi.URLParam(r, "row"), chi.URLParam(r, "seat"))
 		if err != nil {
-			rw.Write([]byte(err.Error()))
+			a.renderErrInternal(rw, err)
 			return
 		}
 
@@ -109,16 +102,11 @@ func (a *ApiServer) updateSeat() http.HandlerFunc {
 		seat.Broken = s.Broken
 		err = a.store.Models.SeatUpdate(seat)
 		if err != nil {
-			rw.Write([]byte(err.Error()))
+			a.renderErrInternal(rw, err)
 			return
 		}
 
-		res, err := json.Marshal(seat)
-		if err != nil {
-			rw.Write([]byte(err.Error()))
-			return
-		}
-		rw.Write(res)
+		a.renderJSON(rw, 200, seat)
 	}
 }
 
@@ -126,21 +114,16 @@ func (a *ApiServer) deleteSeat() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		seat, err := a.store.Models.SeatGetByName(chi.URLParam(r, "section"), chi.URLParam(r, "row"), chi.URLParam(r, "seat"))
 		if err != nil {
-			rw.Write([]byte(err.Error()))
+			a.renderErrInternal(rw, err)
 			return
 		}
 
 		err = a.store.Models.SeatDelete(seat)
 		if err != nil {
-			rw.Write([]byte(err.Error()))
+			a.renderErrInternal(rw, err)
 			return
 		}
 
-		res, err := json.Marshal(seat)
-		if err != nil {
-			rw.Write([]byte(err.Error()))
-			return
-		}
-		rw.Write(res)
+		a.renderJSON(rw, 200, seat)
 	}
 }
